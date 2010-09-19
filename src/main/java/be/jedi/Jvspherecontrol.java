@@ -31,6 +31,7 @@ package be.jedi;
 
 import java.net.URL;
 
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -48,6 +49,11 @@ import org.talamonso.OMAPI.Exceptions.OmapiInitException;
 import org.talamonso.OMAPI.Exceptions.OmapiObjectException;
 import org.talamonso.OMAPI.Objects.Host;
 
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import com.tightvnc.vncviewer.JvncKeySender;
 import com.vmware.vim25.ConfigTarget;
 
@@ -140,6 +146,8 @@ public class Jvspherecontrol {
 
 	public Jvspherecontrol(String[] args) {
 		try {
+			checkSsh();
+
 			parseArguments(args);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -148,10 +156,44 @@ public class Jvspherecontrol {
 		
 	}
 	
+	void checkSsh() {
+		
+		JSch jcsh=new JSch();
+		String user="kapitein";
+		String sshHost="192.168.2.150";
+		int sshTimeout=30000;
+		int port=22;
+		try {
+			Session session=jcsh.getSession(user, sshHost, port);
+			session.setPassword("12345678");
+			session.setConfig("StrictHostKeyChecking", "no");
+			session.connect(sshTimeout);
+			Channel channel=session.openChannel("exec");
+//		    ((ChannelExec)channel).setCommand("who am i");
+//			
+//		    channel.setInputStream(null);
+//			channel.setOutputStream(System.out);
+			
+			channel.connect();
+			channel.disconnect();
+			session.disconnect();
+			
+			//com.jcraft.jsch.JSchException:
+		} catch (JSchException e) {
+			// TODO Auto-generated catch block
+			System.out.println("##"+e.getMessage());
+			//Auth fail
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	
 //	http://www.java-opensource.com/open-source/command-line-interpreters.html
 	void parseArguments(String[]args2)throws Exception {
 		
-		String args[]= { "-vmNicName=\"vmnet3\"","-vsphereUrl=bla","-vmNicName=bla,vlan33"};
+		String args[]= { "-vmNicName=curl","-vmNicName=\"vmnet3\"","-vsphereUrl=bla","-vmNicName=bla,vlan33"};
 
 		Options options = new Options();
 		Option help = new Option( "help", "print this message" ); options.addOption(help);
