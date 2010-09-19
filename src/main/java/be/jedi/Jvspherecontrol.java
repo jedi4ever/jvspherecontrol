@@ -49,8 +49,6 @@ import org.talamonso.OMAPI.Exceptions.OmapiInitException;
 import org.talamonso.OMAPI.Exceptions.OmapiObjectException;
 import org.talamonso.OMAPI.Objects.Host;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -159,23 +157,26 @@ public class Jvspherecontrol {
 	void checkSsh() {
 		
 		JSch jcsh=new JSch();
-		String user="kapitein";
+		String sshUser="kapitein";
 		String sshHost="192.168.2.150";
+		String sshPassword="12345678";
+		String sshKeyFile="";
 		int sshTimeout=30000;
 		int port=22;
 		try {
-			Session session=jcsh.getSession(user, sshHost, port);
-			session.setPassword("12345678");
+			Session session=jcsh.getSession(sshUser, sshHost, port);
+			session.setPassword(sshPassword);
 			session.setConfig("StrictHostKeyChecking", "no");
+			jcsh.addIdentity(sshKeyFile);
+//			jcsh.addIdentity(sshKeyFile,sshKeyPassPhrase);
 			session.connect(sshTimeout);
-			Channel channel=session.openChannel("exec");
+			
+//			Channel channel=session.openChannel("exec");
 //		    ((ChannelExec)channel).setCommand("who am i");
-//			
 //		    channel.setInputStream(null);
 //			channel.setOutputStream(System.out);
-			
-			channel.connect();
-			channel.disconnect();
+//			channel.connect();
+//			channel.disconnect();
 			session.disconnect();
 			
 			//com.jcraft.jsch.JSchException:
@@ -185,8 +186,7 @@ public class Jvspherecontrol {
 			//Auth fail
 			e.printStackTrace();
 		}
-		
-		
+			
 	}
 	
 	
