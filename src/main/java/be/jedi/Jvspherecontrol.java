@@ -304,7 +304,7 @@ public class Jvspherecontrol {
 			
 			Host h = new Host(c);
 			h.updateIPAddress("1.3.1.46");
-			h.setName("albert");
+			h.setName("albert2");
 			Host remote = h.send(Message.UPDATE);
 			
 			Host h2 = new Host(c);
