@@ -1,4 +1,4 @@
-package be.jedi.ssh;
+package be.jedi.jvspherecontrol.ssh;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;

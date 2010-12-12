@@ -1,36 +1,4 @@
-/*================================================================================
-Copyright (c) 2008 VMware, Inc. All Rights Reserved.
-
-Redistribution and use in source and binary forms, with or without modification, 
-are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice, 
-this list of conditions and the following disclaimer.
-
- * Redistributions in binary form must reproduce the above copyright notice, 
-this list of conditions and the following disclaimer in the documentation 
-and/or other materials provided with the distribution.
-
- * Neither the name of VMware, Inc. nor the names of its contributors may be used
-to endorse or promote products derived from this software without specific prior 
-written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-IN NO EVENT SHALL VMWARE, INC. OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
-WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-POSSIBILITY OF SUCH DAMAGE.
-================================================================================*/
-
-package be.jedi;
-
-import java.net.URL;
-
+package be.jedi.jvspherecontrol;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -40,72 +8,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.eclipse.jetty.server.Server;
 
-import org.talamonso.OMAPI.Connection;
-import org.talamonso.OMAPI.Message;
-import org.talamonso.OMAPI.Exceptions.OmapiConnectionException;
-import org.talamonso.OMAPI.Exceptions.OmapiException;
-import org.talamonso.OMAPI.Exceptions.OmapiInitException;
-import org.talamonso.OMAPI.Exceptions.OmapiObjectException;
-import org.talamonso.OMAPI.Objects.Host;
-
-import be.jedi.vnc.VncServer;
-import be.jedi.vsphere.VsphereServer;
-
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.tightvnc.vncviewer.JvncKeySender;
-import com.vmware.vim25.ConfigTarget;
-
-import com.vmware.vim25.DatastoreSummary;
-import com.vmware.vim25.Description;
-import com.vmware.vim25.ManagedObjectReference;
-import com.vmware.vim25.OptionValue;
-import com.vmware.vim25.VirtualCdrom;
-import com.vmware.vim25.VirtualCdromIsoBackingInfo;
-import com.vmware.vim25.VirtualDevice;
-import com.vmware.vim25.VirtualDeviceConfigSpec;
-import com.vmware.vim25.VirtualDeviceConfigSpecFileOperation;
-import com.vmware.vim25.VirtualDeviceConfigSpecOperation;
-import com.vmware.vim25.VirtualDisk;
-import com.vmware.vim25.VirtualDiskFlatVer2BackingInfo;
-import com.vmware.vim25.VirtualE1000;
-import com.vmware.vim25.VirtualEthernetCard;
-import com.vmware.vim25.VirtualEthernetCardNetworkBackingInfo;
-import com.vmware.vim25.VirtualFloppy;
-import com.vmware.vim25.VirtualFloppyImageBackingInfo;
-import com.vmware.vim25.VirtualHardware;
-import com.vmware.vim25.VirtualIDEController;
-import com.vmware.vim25.VirtualLsiLogicController;
-import com.vmware.vim25.VirtualMachineBootOptions;
-import com.vmware.vim25.VirtualMachineCapability;
-import com.vmware.vim25.VirtualMachineConfigInfo;
-import com.vmware.vim25.VirtualMachineConfigOption;
-import com.vmware.vim25.VirtualMachineConfigSpec;
-import com.vmware.vim25.VirtualMachineDatastoreInfo;
-import com.vmware.vim25.VirtualMachineFileInfo;
-import com.vmware.vim25.VirtualMachinePowerState;
-import com.vmware.vim25.VirtualMachineRuntimeInfo;
-import com.vmware.vim25.VirtualMachineStorageInfo;
-import com.vmware.vim25.VirtualMachineSummary;
-import com.vmware.vim25.VirtualPCNet32;
-import com.vmware.vim25.VirtualSCSISharing;
-import com.vmware.vim25.mo.Datacenter;
-import com.vmware.vim25.mo.Datastore;
-import com.vmware.vim25.mo.EnvironmentBrowser;
-import com.vmware.vim25.mo.Folder;
-import com.vmware.vim25.mo.HostSystem;
-import com.vmware.vim25.mo.InventoryNavigator;
-import com.vmware.vim25.mo.ManagedEntity;
-import com.vmware.vim25.mo.Network;
-import com.vmware.vim25.mo.ResourcePool;
-import com.vmware.vim25.mo.ServiceInstance;
-import com.vmware.vim25.mo.Task;
-import com.vmware.vim25.mo.VirtualMachine;
-
-public class Jvspherecontrol {
+public class TrialStuff {
 
 	//Vsphere options
 	boolean vsphereAction=false;
@@ -136,43 +40,8 @@ public class Jvspherecontrol {
 	String omapiKeyName;
 	String omapiKeyValue;
 
-	public static void main(String[] args) {
-		Jvspherecontrol jvs=new Jvspherecontrol(args);
-		try {
-			jvs.doit();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public Jvspherecontrol(String[] args) {
-		try {
-			parseArguments(args);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	void startWeb() {
-		Server server = new Server(8080);
-		try {
-			server.start();
-			server.join();
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-
-
 	//	http://www.java-opensource.com/open-source/command-line-interpreters.html
-	void parseArguments2(String[]args2)throws Exception {
+	void parseArgumentsTrial(String[]args2)throws Exception {
 
 		String args[]= { "-vmNicName=curl","-vmNicName=\"vmnet3\"","-vsphereUrl=bla","-vmNicName=bla,vlan33"};
 
@@ -208,6 +77,8 @@ public class Jvspherecontrol {
 		Option vmOverwriteOption = new Option( "vmOverwrite", "overwrite existing vm with same name" ); options.addOption(vmOverwriteOption);
 
 
+		vmActionOption.getArgName();
+
 		// create the parser
 		CommandLineParser parser = new GnuParser();
 		try {
@@ -233,7 +104,7 @@ public class Jvspherecontrol {
 
 	// Mac generator = http://communities.vmware.com/thread/25126
 
-	void parseArguments3(String[] args)  throws Exception {
+	void parseArgumentsServer(String[] args)  throws Exception {
 
 		vsphereAction=true;
 		vsphereUrl= "https://192.168.2.152/sdk";
@@ -280,7 +151,7 @@ public class Jvspherecontrol {
 
 	}
 
-	void parseArguments(String[] args)  throws Exception {
+	void parseArgumentsClient(String[] args)  throws Exception {
 
 		vsphereUrl= "https://192.168.2.152/sdk";
 		vsphereUsername="root";
@@ -308,75 +179,4 @@ public class Jvspherecontrol {
 		omapiKeyValue="2YdVRKaJ4x41lDqHfA8rl8pHx95C4PmBgPcf5hIJ8j417HFN0AxUBEo6/3FoYyWjPyvXXCd+H6fPygtZd/iKxQ==";
 
 	}
-
-
-
-	public  void doit() throws Exception 
-	{  
-
-		VsphereServer vsphereServer=new VsphereServer(vsphereUrl, vsphereUsername,vspherePassword);
-		vsphereServer.connect();
-		vsphereServer.listDataCenters();
-		vsphereServer.listDataStores();
-		vsphereServer.listHosts();
-		vsphereServer.listNetworks();
-
-		//Find if vm by name vmname already exists
-		VirtualMachine existingVm=vsphereServer.findVmByName(vmName);
-
-		if (existingVm!=null) {
-			System.out.println("Machine exists with name:"+existingVm.getName());
-			vsphereServer.showVmDetail(existingVm);
-
-			//Where was this used for?
-//			VirtualMachineCapability vmc = existingVm.getCapability();
-//			VirtualMachineSummary summary = (VirtualMachineSummary) (existingVm.getSummary());
-
-			if (vsphereServer.isVmPoweredOn(existingVm))
-			{
-				vsphereServer.powerOffVm(existingVm);	  		
-			} 
-
-			vsphereServer.destroyVm(existingVm);	  		
-
-		} 
-
-		VirtualMachine newVm=vsphereServer.createVm(vmName,vmMemorySize,vmCpuCount,vmGuestOsId,vmDiskSize,vmDiskMode,
-				vmInterfaces,vsphereDataCenterName,vsphereDataStoreName);
-		
-		vsphereServer.setCdromVm(newVm,vmCdromIsoFile,vsphereDataStoreName);
-		vsphereServer.setEnterBiosVm(newVm,true);
-
-
-		if (newVm!=null) {
-			vsphereServer.powerOnVm(newVm);
-		}
-
-		//it is now in bios waiting , so we can power it off
-		
-		if (newVm!=null) {
-			vsphereServer.powerOffVm(newVm);
-		}
-
-		vsphereServer.setEnterBiosVm(newVm,false);
-		vsphereServer.setVmPxebootInterface(newVm,vmPxeInterface);
-		
-		vsphereServer.listNicsVm(newVm);
-
-		if (vncActivate) {
-			vsphereServer.vncActivateVm(newVm,vncPort,vncPassword);
-		}
-
-		if (newVm!=null) {
-			vsphereServer.powerOnVm(newVm);		
-		}
-
-		if (vncSendAction) {
-			VncServer vncServer=new VncServer(vncHost,vncPort,vncPassword); 
-			vncServer.sendText(vncText);			
-		}
-
-
-	}
-
 }

@@ -1,4 +1,4 @@
-package be.jedi.vsphere;
+package be.jedi.jvspherecontrol.vsphere;
 
 import com.vmware.vim25.ConfigTarget;
 import com.vmware.vim25.DatastoreSummary;
