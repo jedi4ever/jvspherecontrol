@@ -5,6 +5,8 @@ import java.lang.reflect.Array;
 import org.apache.commons.cli.OptionBuilder;
 
 import be.jedi.jvspherecontrol.dhcp.OmapiServer;
+import be.jedi.jvspherecontrol.exceptions.InvalidCLIArgumentSyntaxException;
+import be.jedi.jvspherecontrol.exceptions.MissingCLIArgumentException;
 import be.jedi.jvspherecontrol.vsphere.VsphereServer;
 
 import com.vmware.vim25.mo.VirtualMachine;
@@ -27,7 +29,7 @@ public class DeActivateVncInVmCommand extends VsphereCommand  {
 		super.init(args);
 	}
 
-	public void validateArgs(){
+	public void validateArgs() throws MissingCLIArgumentException, InvalidCLIArgumentSyntaxException{
 		
 		super.validateArgs();
 		

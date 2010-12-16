@@ -7,6 +7,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import be.jedi.jvspherecontrol.exceptions.InvalidCLIArgumentSyntaxException;
+import be.jedi.jvspherecontrol.exceptions.MissingCLIArgumentException;
+
 
 public  class AbstractCommand {
 
@@ -40,7 +43,7 @@ public  class AbstractCommand {
 	}
 
 
-	public void validateArgs() {
+	public void validateArgs() throws MissingCLIArgumentException, InvalidCLIArgumentSyntaxException {
 		
 		// create the parser
 		CommandLineParser parser = new GnuParser();
@@ -50,7 +53,7 @@ public  class AbstractCommand {
 		}
 		catch( ParseException exp ) {
 			// oops, something went wrong
-			System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
+			throw new MissingCLIArgumentException("parse exception"+exp.getMessage());
 		}
 		
 	}

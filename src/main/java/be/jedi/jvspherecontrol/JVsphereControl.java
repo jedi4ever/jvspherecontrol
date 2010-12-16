@@ -4,10 +4,17 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import be.jedi.jvspherecontrol.commands.*;
+import be.jedi.jvspherecontrol.exceptions.InvalidCLIArgumentSyntaxException;
+import be.jedi.jvspherecontrol.exceptions.InvalidCLICommandException;
+import be.jedi.jvspherecontrol.exceptions.MissingCLIArgumentException;
+
+import org.apache.log4j.Logger;
 
 
 public class JVsphereControl {
 
+	public static Logger logger=Logger.getLogger(JVsphereControl.class);
+	
 	Hashtable<String, Class> commands;
 
 	String mainArgs[];
@@ -35,17 +42,16 @@ public class JVsphereControl {
 		}
 	}
 	
-	 void execute() {
-			
+	 Integer execute() {
 
 				if (command!=null) {
 					 System.out.println("executing");
 					command.execute();
 				}
-		
+				return (0);
 	}
 
-	void validateArgs() {
+	void validateArgs() throws MissingCLIArgumentException,InvalidCLICommandException, InvalidCLIArgumentSyntaxException {
 	
 		String subArgs[];
 		
@@ -53,8 +59,12 @@ public class JVsphereControl {
 			//We need the subcommand 
 			subCommand=mainArgs[0];
 	
+			if (commands.get(subCommand)==null) {
+				throw new InvalidCLICommandException();
+			}
+			
 			commandClass=commands.get(subCommand).getName();
-			System.out.println("Executing class = "+commandClass);
+			logger.debug("Executing class = "+commandClass);
 			
 			if (mainArgs.length>1) {
 				subArgs=new String[mainArgs.length-1];
@@ -69,6 +79,7 @@ public class JVsphereControl {
 			try {
 				command = (AbstractCommand) Class.forName(commandClass).newInstance();
 				command.init(subArgs);
+
 				
 				if (command!=null) {
 					command.validateArgs();
@@ -83,10 +94,16 @@ public class JVsphereControl {
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (InvalidCLIArgumentSyntaxException e) {
+				logger.error(e.toString());
+				InvalidCLIArgumentSyntaxException ex=new InvalidCLIArgumentSyntaxException("Syntax error in argument:"+e.getLocalizedMessage());
+				throw ex;				
 			}
 		} else {
-			System.err.println("We need at least one arg");
+			logger.error("We need at least one arg");
 			printAvailableCommands();
+			MissingCLIArgumentException ex=new MissingCLIArgumentException("We need at least one argument");
+			throw ex;
 		}		
 	}
 	
@@ -98,9 +115,7 @@ public class JVsphereControl {
 		this.registerCommand(CreateVmCommand.class);
 		this.registerCommand(SendVncTextCommand.class);
 		this.registerCommand(ActivateVncInVmCommand.class);
-		this.registerCommand(DeActivateVncInVmCommand.class);
-
-		
+		this.registerCommand(DeActivateVncInVmCommand.class);	
 		//	this.registerCommand(KickstartVmCommand.class);
 		//	this.registerCommand(OmapiRegisterCommand.class);	
 
@@ -116,7 +131,6 @@ public class JVsphereControl {
 			System.out.println("'" + key + "'");
 		}
 	}
-	
 	
 	void registerCommand(Class commandClass) {
 			try {

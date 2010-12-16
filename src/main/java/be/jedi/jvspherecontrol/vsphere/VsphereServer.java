@@ -83,39 +83,45 @@ public class VsphereServer {
 	}
 
 
-	public void listDataCenters() throws InvalidProperty, RuntimeFault, RemoteException {
+	public ArrayList<String> listDataCenters() throws InvalidProperty, RuntimeFault, RemoteException {
 
 		ManagedEntity[] datacenters = new InventoryNavigator(rootFolder).searchManagedEntities("Datacenter");
 
+		ArrayList<String> datacenterList=new ArrayList<String>();
+		
 		for(int i=0; i<datacenters.length; i++)
 		{
-
 			Datacenter dc = (Datacenter) datacenters[i];
-			System.out.println("Datacenters:"+dc.getName());
-
+			datacenterList.add(dc.getName());
 		}
+		return datacenterList;
 	}
 
-	public void listDataStores() throws InvalidProperty, RuntimeFault, RemoteException {
+	public ArrayList<String> listDataStores() throws InvalidProperty, RuntimeFault, RemoteException {
 
 		ManagedEntity[] datacenters = new InventoryNavigator(rootFolder).searchManagedEntities("Datacenter");
 
+		ArrayList<String> datastoreList=new ArrayList<String>();
+		
 		for(int i=0; i<datacenters.length; i++)
 		{
 			Datacenter dc = (Datacenter) datacenters[i];
 			Datastore[] stores=dc.getDatastores();
 			for(int d=0; d<stores.length; d++) {
-				System.out.println("Store:"+stores[d].getName());
+				datastoreList.add(stores[d].getName());
 			}	
-
 		}
+		
+		return datastoreList;
 
 	}
 
-	public void listNetworks() throws InvalidProperty, RuntimeFault, RemoteException {
+	public ArrayList<String> listNetworks() throws InvalidProperty, RuntimeFault, RemoteException {
 
 		ManagedEntity[] datacenters = 
 			new InventoryNavigator(rootFolder).searchManagedEntities("Datacenter");
+		
+		ArrayList<String> networkList=new ArrayList<String>();
 
 		for(int i=0; i<datacenters.length; i++)
 		{
@@ -124,13 +130,14 @@ public class VsphereServer {
 
 			Network[] nets=dc.getNetworks();
 			for(int d=0; d<nets.length; d++) {
-				System.out.println("Nets:"+nets[d].getName());
+				networkList.add(nets[d].getName());
 			}
 		}
 
-
+		return networkList;
 	}
 
+	
 	public VirtualMachine findVmByName(String vmName) throws InvalidProperty, RuntimeFault, RemoteException {
 		VirtualMachine existingVm = (VirtualMachine) new InventoryNavigator(rootFolder).searchManagedEntity("VirtualMachine",vmName);
 
@@ -472,7 +479,7 @@ public class VsphereServer {
 	}
 
 	public VirtualMachine createVm(String vmName, long vmMemorySize, int vmCpuCount,
-			String vmGuestOsId, long vmDiskSize, String vmDiskMode,
+			String vmGuestOsId, String[][] vmDisks,
 			String[][] vmInterfaces, String vmDataCenterName, String vmDataStoreName ) throws Exception {
 		//	ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
 
@@ -493,24 +500,30 @@ public class VsphereServer {
 		vmSpec.setNumCPUs(vmCpuCount);
 		vmSpec.setGuestId(vmGuestOsId);
 
-		// create virtual devices
+		VirtualDeviceConfigSpec machineSpecs[]= new VirtualDeviceConfigSpec[vmInterfaces.length+2*vmDisks.length];
 		int cKey = 1000;
-		VirtualDeviceConfigSpec scsiSpec = VsphereUtils.createScsiSpec(cKey);
-		VirtualDeviceConfigSpec diskSpec = VsphereUtils.createDiskSpec(
-				vmDataStoreName, cKey, vmDiskSize, vmDiskMode);
+		// virtual disks+ scsi controller
+		for (int i=0; i< vmDisks.length; i++) {
+	
+			VirtualDeviceConfigSpec scsiSpec = VsphereUtils.createScsiSpec(cKey);
+			VirtualDeviceConfigSpec diskSpec = VsphereUtils.createDiskSpec(
+					vmDataStoreName, cKey, Long.parseLong(vmDisks[i][0]), vmDisks[i][1]);
 
-		VirtualDeviceConfigSpec machineSpecs[]= new VirtualDeviceConfigSpec[vmInterfaces.length+2];
-		machineSpecs[0]=scsiSpec;
-		machineSpecs[1]=diskSpec;
-
+			machineSpecs[2*i]=scsiSpec;
+			machineSpecs[2*i+1]=diskSpec;
+			
+		}
+		
+		//virtual network interfaces
 		for (int i=0; i< vmInterfaces.length; i++ ) {
 
-			machineSpecs[2+i]= VsphereUtils.createNicSpec(
+			machineSpecs[vmDisks.length*2+i]= VsphereUtils.createNicSpec(
 					vmInterfaces[i][0], vmInterfaces[i][1]);
 		}   
 
 		vmSpec.setDeviceChange(machineSpecs);
 
+		
 		// create vm file info for the vmx file
 		VirtualMachineFileInfo vmfi = new VirtualMachineFileInfo();
 		vmfi.setVmPathName("["+ vmDataStoreName +"]");
@@ -536,6 +549,7 @@ public class VsphereServer {
 		} else 
 		{
 			System.out.println("VM could not be created. ");
+			System.exit(-1);
 		}		
 		
 		return newVm;

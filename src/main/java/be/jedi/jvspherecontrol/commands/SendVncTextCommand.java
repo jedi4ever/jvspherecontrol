@@ -3,6 +3,8 @@ package be.jedi.jvspherecontrol.commands;
 import org.apache.commons.cli.OptionBuilder;
 
 import be.jedi.jvncsender.VncSender;
+import be.jedi.jvspherecontrol.exceptions.InvalidCLIArgumentSyntaxException;
+import be.jedi.jvspherecontrol.exceptions.MissingCLIArgumentException;
 
 
 
@@ -21,7 +23,7 @@ public class SendVncTextCommand extends AbstractCommand  {
 		super();	
 	}
 	
-	public void validateArgs(){
+	public void validateArgs() throws MissingCLIArgumentException, InvalidCLIArgumentSyntaxException{
 		
 		super.validateArgs();
 		vncText=cmdLine.getOptionValues("text");
