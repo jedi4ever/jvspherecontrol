@@ -10,6 +10,7 @@ import com.vmware.vim25.VirtualDevice;
 import com.vmware.vim25.VirtualDeviceConfigSpec;
 import com.vmware.vim25.VirtualDeviceConfigSpecFileOperation;
 import com.vmware.vim25.VirtualDeviceConfigSpecOperation;
+import com.vmware.vim25.VirtualDeviceConnectInfo;
 import com.vmware.vim25.VirtualDisk;
 import com.vmware.vim25.VirtualDiskFlatVer2BackingInfo;
 import com.vmware.vim25.VirtualE1000;
@@ -23,7 +24,10 @@ import com.vmware.vim25.VirtualMachineConfigInfo;
 import com.vmware.vim25.VirtualMachineConfigOption;
 import com.vmware.vim25.VirtualMachineDatastoreInfo;
 import com.vmware.vim25.VirtualMachineRuntimeInfo;
+import com.vmware.vim25.VirtualPCNet32;
 import com.vmware.vim25.VirtualSCSISharing;
+import com.vmware.vim25.VirtualVmxnet2;
+import com.vmware.vim25.VirtualVmxnet3;
 import com.vmware.vim25.mo.EnvironmentBrowser;
 import com.vmware.vim25.mo.HostSystem;
 import com.vmware.vim25.mo.VirtualMachine;
@@ -47,7 +51,7 @@ public class VsphereUtils {
 
 
 	public static  VirtualDeviceConfigSpec createDiskSpec(String dsName, 
-			int cKey, long diskSizeKB, String diskMode)
+			int cKey, long diskSizeKB, String diskMode,int unitNumber)
 	{
 		VirtualDeviceConfigSpec diskSpec = 
 			new VirtualDeviceConfigSpec();
@@ -59,7 +63,7 @@ public class VsphereUtils {
 		vd.setCapacityInKB(diskSizeKB);
 		diskSpec.setDevice(vd);
 		vd.setKey(0);
-		vd.setUnitNumber(0);
+		vd.setUnitNumber(unitNumber);
 		vd.setControllerKey(cKey);
 
 		VirtualDiskFlatVer2BackingInfo diskfileBacking = 
@@ -107,24 +111,42 @@ public class VsphereUtils {
 	//  http://webcache.googleusercontent.com/search?q=cache:-IaJ930Lu4oJ:communities.vmware.com/servlet/JiveServlet/download/10742-1-28258/VMNetworkingOps.java%3Bjsessionid%3D08B9FD441B37D6093CEFFBF35C7C0909+VirtualPCNet32+java+E1000&cd=1&hl=nl&ct=clnk&gl=be&client=firefox-a 
 	// nic types = e1000,pcnet32,vmxnet2,vmxnet3
 	static public VirtualDeviceConfigSpec createNicSpec(String netName, 
-			String nicName) throws Exception
+			String nicName,boolean startConnected,boolean connected,String nicAdapter) throws Exception
 			{
+
+
+		//		
+		//	http://communities.vmware.com/message/1251528
 		VirtualDeviceConfigSpec nicSpec = 
 			new VirtualDeviceConfigSpec();
 		nicSpec.setOperation(VirtualDeviceConfigSpecOperation.add);
 
+		VirtualEthernetCard nic=null;
+		
+		if (nicAdapter.equals("e1000")) {
+			nic= new VirtualE1000();
+		}
+		if (nicAdapter.equals("pcnet32")) {
+			nic= new VirtualPCNet32();
+		}
+		if (nicAdapter.equals("vmxnet2")) {
+			nic= new VirtualVmxnet2();
+		}
+		if (nicAdapter.equals("vmxnet3")) {
+			nic= new VirtualVmxnet3();
+		}
+		
+		if (nic==null) {
+			throw new Exception("unknown nic adaptor type");
+		}
+		
+		
+		
+		nic.setConnectable(new VirtualDeviceConnectInfo());
+		nic.connectable.setStartConnected(startConnected);
+		nic.connectable.setConnected(connected);
 
-		VirtualEthernetCard nic =  new VirtualE1000();
-		//Create defalut E1000 adapter
-		//    VirtualEthernetCard vd = new VirtualE1000();
-		//    
-		//    if (adapterType.equalsIgnoreCase(PCNET32)) {
-		//        vd = new VirtualPCNet32();
-		//    } else if (adapterType.equalsIgnoreCase(VMXNET2)) {
-		//        vd = new VirtualVmxnet2();
-		//    } else if (adapterType.equalsIgnoreCase(VMXNET3)) {
-		//        vd = new VirtualVmxnet3();
-		//    }
+
 
 		VirtualEthernetCardNetworkBackingInfo nicBacking = 
 			new VirtualEthernetCardNetworkBackingInfo();

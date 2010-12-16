@@ -18,7 +18,6 @@ import com.vmware.vim25.RuntimeFault;
 import com.vmware.vim25.TaskInProgress;
 import com.vmware.vim25.VirtualDevice;
 import com.vmware.vim25.VirtualDeviceConfigSpec;
-import com.vmware.vim25.VirtualDeviceConnectInfo;
 import com.vmware.vim25.VirtualE1000;
 import com.vmware.vim25.VirtualEthernetCard;
 import com.vmware.vim25.VirtualHardware;
@@ -396,12 +395,30 @@ public class VsphereServer {
 	}
 	
 	
-	public void setBootOrderVm(VirtualMachine vm) {
+	public void setBootOrderVm(VirtualMachine vm,String order) throws InvalidName, VmConfigFault, DuplicateName, TaskInProgress, FileFault, InvalidState, ConcurrentAccess, InvalidDatastore, InsufficientResourcesFault, RuntimeFault, RemoteException, InterruptedException {
 
-		//Net boot order
 		//bios.bootDeviceClasses
-		//allow:cd,hd,net
 		//http://download3.vmware.com/sample_code/Perl/VMBootOrder.html
+		// "allow:cd,hd,net"
+		
+		OptionValue bootOptions=new OptionValue() ;bootOptions.setKey("bios.bootDeviceClasses");bootOptions.setValue(order);
+		OptionValue[] bootOptionsConfig= {  bootOptions };
+
+		VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
+		vmConfigSpec.setExtraConfig(bootOptionsConfig);
+
+		Task bootOptionstask = 	vm.reconfigVM_Task(vmConfigSpec);
+		String bootOptionsResult=  	bootOptionstask.waitForTask();
+
+		if(bootOptionsResult == Task.SUCCESS) 
+		{
+			System.out.println("Boot order Set Sucessfully");
+
+		} else {
+			System.out.println("Boot order Error:"+bootOptionsResult);
+		}
+	
+
 	}
 
 
@@ -450,17 +467,6 @@ public class VsphereServer {
 
 				VirtualEthernetCard newnic=null;
 				newnic=(VirtualEthernetCard) devices[i];
-
-//				
-//				http://communities.vmware.com/message/1251528
-//				VirtualDeviceConnectInfo c = newnic.connectable;			
-//				c.setStartConnected(true);
-//			
-//				disk.setBacking(backingInfo);
-//				disk.setConnectable(new VirtualDeviceConnectInfo());
-//				disk.getConnectable().setAllowGuestControl(false);
-//				disk.getConnectable().setConnected(true);
-//				disk.getConnectable().setStartConnected(true);
 				
 				System.out.println(newnic.getMacAddress());
 				System.out.println("network device");
@@ -500,25 +506,27 @@ public class VsphereServer {
 		vmSpec.setNumCPUs(vmCpuCount);
 		vmSpec.setGuestId(vmGuestOsId);
 
-		VirtualDeviceConfigSpec machineSpecs[]= new VirtualDeviceConfigSpec[vmInterfaces.length+2*vmDisks.length];
+		//We create one scsi controller
+		VirtualDeviceConfigSpec machineSpecs[]= new VirtualDeviceConfigSpec[vmInterfaces.length+1+vmDisks.length];
 		int cKey = 1000;
-		// virtual disks+ scsi controller
+		VirtualDeviceConfigSpec scsiSpec = VsphereUtils.createScsiSpec(cKey);
+		machineSpecs[0]=scsiSpec;
+		
+		// Associate the virtual disks with the scsi controller
 		for (int i=0; i< vmDisks.length; i++) {
-	
-			VirtualDeviceConfigSpec scsiSpec = VsphereUtils.createScsiSpec(cKey);
-			VirtualDeviceConfigSpec diskSpec = VsphereUtils.createDiskSpec(
-					vmDataStoreName, cKey, Long.parseLong(vmDisks[i][0]), vmDisks[i][1]);
+				VirtualDeviceConfigSpec diskSpec = VsphereUtils.createDiskSpec(
+					vmDataStoreName, cKey, Long.parseLong(vmDisks[i][0]), vmDisks[i][1],i);
 
-			machineSpecs[2*i]=scsiSpec;
-			machineSpecs[2*i+1]=diskSpec;
+			machineSpecs[i+1]=diskSpec;
 			
 		}
 		
+			
 		//virtual network interfaces
 		for (int i=0; i< vmInterfaces.length; i++ ) {
 
-			machineSpecs[vmDisks.length*2+i]= VsphereUtils.createNicSpec(
-					vmInterfaces[i][0], vmInterfaces[i][1]);
+			machineSpecs[vmDisks.length+1+i]= VsphereUtils.createNicSpec(
+					vmInterfaces[i][0], vmInterfaces[i][1],false,true,"e1000");
 		}   
 
 		vmSpec.setDeviceChange(machineSpecs);
@@ -606,9 +614,5 @@ public class VsphereServer {
 
 		}
 
-		//createVm task
-//		newVm=...
-//		newVm.reconfigVM_Task(spec);
-		
 	}
 }

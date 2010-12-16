@@ -105,7 +105,33 @@ public class JVsphereControlTest {
 	@Test
 	public void testValidCommandCreateVmMinimalOptionsBadMemory() {
 		String args[]= { "createvm","--vsphereUrl=https://esx.example.org","--vsphereUserName=esxadmin","--vspherePassword=mypassword",
-				"--vmName=testvm", "--vmMemorySize=2MMM","--vmGuestOsId=Ubuntu64"				
+				"--vmName=testvm", "--vmMemorySize=2MMM","--vmGuestOsId=Ubuntu64", "--vmDiskMode=persistent", "--vmDiskSize=100000"				
+		};
+
+		try {
+
+			JVsphereControl mockVsphereControl=createMock(JVsphereControl.class);
+			expect(mockVsphereControl.execute()).andReturn(0);
+
+			JVsphereControl vspherecontrol=new JVsphereControl(args);
+			vspherecontrol.validateArgs(); 
+		} catch (InvalidCLICommandException ex) {
+			fail("it should throw an invalid CLI argument Syntax exception");
+		} catch (MissingCLIArgumentException ex) {
+			fail("it should throw an invalid CLI argument Syntax exception");
+		} catch (InvalidCLIArgumentSyntaxException ex) {
+			assertTrue(ex.getMessage().contains("vmMemorySize"));
+		} catch (Exception ex) {
+			System.out.println(ex.toString());			
+			fail("it should send a missing arguments exception");
+		}	
+
+	}
+
+	@Test
+	public void testValidCommandCreateVmMinimalOptionsBadVsphereUrl() {
+		String args[]= { "createvm","--vsphereUrl=httpppp://esx.example.org","--vsphereUserName=esxadmin","--vspherePassword=mypassword",
+				"--vmName=testvm", "--vmMemorySize=256","--vmGuestOsId=Ubuntu64", "--vmDiskMode=persistent", "--vmDiskSize=100000"			
 		};
 
 		try {
@@ -121,37 +147,11 @@ public class JVsphereControlTest {
 			fail("it should throw an invalid CLI argument Syntax exception");
 		} catch (InvalidCLIArgumentSyntaxException ex) {
 			
-		} catch (Exception ex) {
-			System.out.println(ex.toString());			
-			fail("it should send a missing arguments exception");
-		}	
-
-	}
-
-	@Test
-	public void testValidCommandCreateVmMinimalOptionsBadVsphereUrl() {
-		String args[]= { "createvm","--vsphereUrl=esx.example.org","--vsphereUserName=esxadmin","--vspherePassword=mypassword",
-				"--vmName=testvm", "--vmMemorySize=256","--vmGuestOsId=Ubuntu64"				
-		};
-
-		try {
-
-			JVsphereControl mockVsphereControl=createMock(JVsphereControl.class);
-			expect(mockVsphereControl.execute()).andReturn(0);
-
-			JVsphereControl vspherecontrol=new JVsphereControl(args);
-			vspherecontrol.validateArgs(); 
-		} catch (InvalidCLICommandException ex) {
-			fail("it should throw an invalid CLI argument Syntax exception");
-		} catch (MissingCLIArgumentException ex) {
-			fail("it should throw an invalid CLI argument Syntax exception");
-		} catch (InvalidCLIArgumentSyntaxException ex) {
 			assertTrue(ex.getMessage().contains("vsphereUrl"));
 		} catch (Exception ex) {
-			System.out.println(ex.toString());			
+
 			fail("it should send a missing arguments exception");
 		}	
-
 	}
 
 

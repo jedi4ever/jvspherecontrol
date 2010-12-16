@@ -95,9 +95,7 @@ public class VsphereDataStoreClient
 		HttpHead headmethod=new HttpHead(headurl);
 
 		HttpResponse response = httpclient.execute(headmethod);
-		HttpEntity resEntity = response.getEntity();
 		int statusCode=response.getStatusLine().getStatusCode();
-
 		return (statusCode==200);
 	}
 

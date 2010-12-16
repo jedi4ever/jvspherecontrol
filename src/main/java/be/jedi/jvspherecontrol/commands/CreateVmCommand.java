@@ -149,6 +149,8 @@ public class CreateVmCommand extends VsphereCommand  {
 
 			//flip the enterbios flag
 			vsphereServer.setEnterBiosVm(newVm,false);
+			
+			vsphereServer.setBootOrderVm(newVm, "allow:cd");
 
 			//vsphereServer.listNicsVm(newVm);
 			if (vmOmapiRegister) {
@@ -343,6 +345,14 @@ public class CreateVmCommand extends VsphereCommand  {
 		vmGuestOsId.setRequired(true);
 		options.addOption(vmGuestOsId);
 
+		Option vmDiskSize=OptionBuilder.withArgName( "disksize" ).hasArgs().withDescription(  "size in kb of disk to create" ).create( "vmDiskSize" );
+		vmDiskSize.setRequired(true);
+		options.addOption(vmDiskSize);
+
+		Option vmDiskMode=OptionBuilder.withArgName( "persistent|independent_persistent|independent_nonpersistent" ).hasArgs().withDescription(  "disk mode" ).create( "vmDiskMode" );
+		vmDiskMode.setRequired(true);
+		options.addOption(vmDiskMode);
+
 		
 		options.addOption(OptionBuilder.withArgName( "datacentername" ).hasArg().withDescription(  "name of the datacenter to store new Vm" ).create( "vsphereDataCenterName" ));
 		options.addOption(OptionBuilder.withArgName( "datastorename" ).hasArg().withDescription(  "name of the datastore to store new Vm" ).create( "vsphereDataStoreName" ));
@@ -354,8 +364,6 @@ public class CreateVmCommand extends VsphereCommand  {
 		options.addOption(OptionBuilder.withArgName( "filename" ).hasArg().withDescription(  "dvd isofile" ).create( "vmCdromIsoFile" ));
 		options.addOption(OptionBuilder.withArgName( "datastorename" ).hasArg().withDescription(  "dvd datastorename" ).create( "vmCdromDataStoreName" ));		
 
-		options.addOption(OptionBuilder.withArgName( "disksize" ).hasArgs().withDescription(  "size in kb of disk to create" ).create( "vmDiskSize" ));
-		options.addOption(OptionBuilder.withArgName( "persistent|independent_persistent|independent_nonpersistent" ).hasArgs().withDescription(  "disk mode" ).create( "vmDiskMode" ));
 
 		options.addOption(OptionBuilder.withArgName( "name" ).hasArgs().withDescription(  "name of the Nic interface" ).create( "vmNicName" ));
 		options.addOption(OptionBuilder.withArgName( "type" ).hasArgs().withDescription(  "type of the Nic interface" ).create( "vmNicType" ));

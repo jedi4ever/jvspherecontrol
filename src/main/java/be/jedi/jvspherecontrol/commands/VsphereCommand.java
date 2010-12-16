@@ -53,9 +53,14 @@ public class VsphereCommand extends AbstractCommand  {
 		
 		try {
 			URI uri= new URI (vsphereUrl);
+			if (!((uri.getScheme().equals("http")) || (uri.getScheme().equals("https")))) {
+				throw new InvalidCLIArgumentSyntaxException("vsphereUrl has an invalid Scheme syntax: "+uri.getScheme());				
+			}
+
 		} catch (URISyntaxException e) {
-			throw new InvalidCLIArgumentSyntaxException("Vsphere Url has an invalid URL syntax");
+			throw new InvalidCLIArgumentSyntaxException("vsphereUrl has an invalid URL syntax: "+e.getMessage());
 		}
+		
 		
 		vsphereUsername=cmdLine.getOptionValue("vsphereUserName");
 		vspherePassword=cmdLine.getOptionValue("vspherePassword");
