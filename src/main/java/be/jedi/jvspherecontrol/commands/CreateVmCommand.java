@@ -59,6 +59,14 @@ public class CreateVmCommand extends VsphereCommand  {
 	public void init(String args[]) {
 		super.init(args);
 	}
+	
+	 public String getKeyword() {
+			return keyword;
+		}
+
+		 public String getDescription() {
+			return description;
+		}
 
 	public void execute(){
 		
@@ -150,7 +158,7 @@ public class CreateVmCommand extends VsphereCommand  {
 			//flip the enterbios flag
 			vsphereServer.setEnterBiosVm(newVm,false);
 			
-			vsphereServer.setBootOrderVm(newVm, "allow:cd");
+			vsphereServer.setBootOrderVm(newVm, "allow:net");
 
 			//vsphereServer.listNicsVm(newVm);
 			if (vmOmapiRegister) {
