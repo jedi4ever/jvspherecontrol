@@ -48,6 +48,7 @@ public class JVsphereControl {
 			jmachineControl.validateArgs();
 			jmachineControl.execute();
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.exit(-1);
 		}
 	}

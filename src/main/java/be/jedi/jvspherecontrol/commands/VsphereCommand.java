@@ -27,15 +27,15 @@ public class VsphereCommand extends AbstractCommand  {
 
 		Option help = new Option( "help", "print this message" ); options.addOption(help);
 
-		Option vsphereUrl=OptionBuilder.withArgName( "vsphereUrl" ).hasArg().withDescription(  "url to connect to" ).create( "vsphereUrl" );
+		Option vsphereUrl=OptionBuilder.withArgName( "url" ).hasArg().withDescription(  "url to connect to" ).create( "url" );
 		vsphereUrl.setRequired(true);
 		options.addOption(vsphereUrl);
 
-		Option vsphereUserName=OptionBuilder.withArgName( "vsphereUsername" ).hasArg().withDescription(  "username to connect to vSphere" ).create( "vsphereUserName" );
+		Option vsphereUserName=OptionBuilder.withArgName( "username" ).hasArg().withDescription(  "username to connect to vSphere" ).create( "user" );
 		vsphereUserName.setRequired(true);
 		options.addOption(vsphereUserName);
 
-		Option vsphereUserPassword=OptionBuilder.withArgName( "vspherePassword" ).hasArg().withDescription(  "password to connect to vSphere" ).create( "vspherePassword" );
+		Option vsphereUserPassword=OptionBuilder.withArgName( "password" ).hasArg().withDescription(  "password to connect to vSphere" ).create( "password" );
 		vsphereUserPassword.setRequired(true);
 		options.addOption(vsphereUserPassword);
 
@@ -49,21 +49,21 @@ public class VsphereCommand extends AbstractCommand  {
 		
 		super.validateArgs();
 
-		vsphereUrl=cmdLine.getOptionValue("vsphereUrl");
+		vsphereUrl=cmdLine.getOptionValue("url");
 		
 		try {
 			URI uri= new URI (vsphereUrl);
 			if (!((uri.getScheme().equals("http")) || (uri.getScheme().equals("https")))) {
-				throw new InvalidCLIArgumentSyntaxException("vsphereUrl has an invalid Scheme syntax: "+uri.getScheme());				
+				throw new InvalidCLIArgumentSyntaxException("url has an invalid Scheme syntax: "+uri.getScheme());				
 			}
 
 		} catch (URISyntaxException e) {
-			throw new InvalidCLIArgumentSyntaxException("vsphereUrl has an invalid URL syntax: "+e.getMessage());
+			throw new InvalidCLIArgumentSyntaxException("url has an invalid URL syntax: "+e.getMessage());
 		}
 		
 		
-		vsphereUsername=cmdLine.getOptionValue("vsphereUserName");
-		vspherePassword=cmdLine.getOptionValue("vspherePassword");
+		vsphereUsername=cmdLine.getOptionValue("user");
+		vspherePassword=cmdLine.getOptionValue("password");
 		
 	}
 	

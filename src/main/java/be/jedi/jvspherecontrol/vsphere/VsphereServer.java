@@ -41,6 +41,8 @@ import com.vmware.vim25.mo.ServiceInstance;
 import com.vmware.vim25.mo.Task;
 import com.vmware.vim25.mo.VirtualMachine;
 
+import be.jedi.jvspherecontrol.VmDisk;
+import be.jedi.jvspherecontrol.VmNic;
 import be.jedi.jvspherecontrol.vsphere.VsphereUtils;
 
 public class VsphereServer {
@@ -485,8 +487,8 @@ public class VsphereServer {
 	}
 
 	public VirtualMachine createVm(String vmName, long vmMemorySize, int vmCpuCount,
-			String vmGuestOsId, String[][] vmDisks,
-			String[][] vmInterfaces, String vmDataCenterName, String vmDataStoreName ) throws Exception {
+			String vmGuestOsId, VmDisk[] vmDisks,
+			VmNic[] vmNics, String vmDataCenterName, String vmDataStoreName ) throws Exception {
 		//	ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
 
 		Datacenter dc = (Datacenter) new InventoryNavigator(rootFolder).searchManagedEntity("Datacenter", vmDataCenterName);
@@ -507,7 +509,7 @@ public class VsphereServer {
 		vmSpec.setGuestId(vmGuestOsId);
 
 		//We create one scsi controller
-		VirtualDeviceConfigSpec machineSpecs[]= new VirtualDeviceConfigSpec[vmInterfaces.length+1+vmDisks.length];
+		VirtualDeviceConfigSpec machineSpecs[]= new VirtualDeviceConfigSpec[vmNics.length+1+vmDisks.length];
 		int cKey = 1000;
 		VirtualDeviceConfigSpec scsiSpec = VsphereUtils.createScsiSpec(cKey);
 		machineSpecs[0]=scsiSpec;
@@ -515,7 +517,7 @@ public class VsphereServer {
 		// Associate the virtual disks with the scsi controller
 		for (int i=0; i< vmDisks.length; i++) {
 				VirtualDeviceConfigSpec diskSpec = VsphereUtils.createDiskSpec(
-					vmDataStoreName, cKey, Long.parseLong(vmDisks[i][0]), vmDisks[i][1],i);
+					vmDataStoreName, cKey, vmDisks[i].getSize(), vmDisks[i].getMode(),i);
 
 			machineSpecs[i+1]=diskSpec;
 			
@@ -523,10 +525,10 @@ public class VsphereServer {
 		
 			
 		//virtual network interfaces
-		for (int i=0; i< vmInterfaces.length; i++ ) {
+		for (int i=0; i< vmNics.length; i++ ) {
 
 			machineSpecs[vmDisks.length+1+i]= VsphereUtils.createNicSpec(
-					vmInterfaces[i][0], vmInterfaces[i][1],false,true,"e1000");
+					vmNics[i].getName(), vmNics[i].getNetwork(),false,true,vmNics[i].getType());
 		}   
 
 		vmSpec.setDeviceChange(machineSpecs);
