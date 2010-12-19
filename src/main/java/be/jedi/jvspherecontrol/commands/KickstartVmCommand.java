@@ -6,13 +6,13 @@ public class KickstartVmCommand extends CreateVmCommand  {
 	public static String description="this kickstarts a virtual machine";
 	
 	CreateVmCommand createVmCommand; 
-	PowerOnVmCommand powerOnVmCommand;
+	StartVmCommand powerOnVmCommand;
 	
 	public KickstartVmCommand() {
 		super();
 		createVmCommand=new CreateVmCommand();
 
-		powerOnVmCommand=new PowerOnVmCommand();
+		powerOnVmCommand=new StartVmCommand();
 
 	}
 

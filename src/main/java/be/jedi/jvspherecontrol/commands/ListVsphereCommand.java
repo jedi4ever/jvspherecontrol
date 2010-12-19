@@ -23,12 +23,34 @@ public class ListVsphereCommand extends VsphereCommand {
 		
 		VsphereServer vsphereServer=new VsphereServer(vsphereUrl, vsphereUsername,vspherePassword);
 			try {
+				
 				vsphereServer.connect();
-				vsphereServer.listDataCenters();
-				vsphereServer.listDataStores();
-				vsphereServer.listHosts();
-				vsphereServer.listNetworks();
+				
+				for (String host : vsphereServer.listHosts()) {
+					System.out.println("Host found: "+host);
+				}
+				
+				for (String datacenter :vsphereServer.listDataCenters() ) {
+					System.out.println("Datacenter found: "+datacenter);					
+				}
 
+				for (String datastore :vsphereServer.listDataStores() ) {
+					System.out.println("Datastore found: "+datastore);					
+				}
+
+				for (String network :vsphereServer.listNetworks() ) {
+					System.out.println("Network found: "+network);					
+				}
+
+				for (String user :vsphereServer.listUsers() ) {
+					System.out.println("User found: "+user);					
+				}
+
+				for (String vm :vsphereServer.listVms() ) {
+					System.out.println("Vm found: "+vm);					
+				}
+
+				
 			} catch (RemoteException e) {
 
 				// TODO Auto-generated catch block

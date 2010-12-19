@@ -4,12 +4,15 @@ import be.jedi.jvspherecontrol.vsphere.VsphereServer;
 
 import com.vmware.vim25.mo.VirtualMachine;
 
-public class PowerOnVmCommand extends VsphereCommand  {
+public class StartVmCommand extends VsphereCommand  {
 
 	private String vmName;
 
-
-	public PowerOnVmCommand() {
+	public static String keyword="startvm"; 
+	public static String description="this starts a virtual machine"; 
+	
+	
+	public StartVmCommand() {
 		super();
 	}
 

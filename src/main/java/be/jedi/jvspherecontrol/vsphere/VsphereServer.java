@@ -13,9 +13,11 @@ import com.vmware.vim25.InvalidDatastore;
 import com.vmware.vim25.InvalidName;
 import com.vmware.vim25.InvalidProperty;
 import com.vmware.vim25.InvalidState;
+import com.vmware.vim25.NotFound;
 import com.vmware.vim25.OptionValue;
 import com.vmware.vim25.RuntimeFault;
 import com.vmware.vim25.TaskInProgress;
+import com.vmware.vim25.UserSearchResult;
 import com.vmware.vim25.VirtualDevice;
 import com.vmware.vim25.VirtualDeviceConfigSpec;
 import com.vmware.vim25.VirtualE1000;
@@ -50,7 +52,7 @@ public class VsphereServer {
 	String vsphereUrl, vsphereUsername,vspherePassword;
 
 	Folder rootFolder;
-
+	ServiceInstance si;
 
 	public VsphereServer(String vsphereUrl, String vsphereUsername,
 			String vspherePassword) {
@@ -64,26 +66,56 @@ public class VsphereServer {
 
 	public void connect() throws RemoteException, MalformedURLException {
 
-		ServiceInstance si = new ServiceInstance(
+		si = new ServiceInstance(
 				new URL(vsphereUrl), vsphereUsername, vspherePassword, true);
-
+		
+	
 		rootFolder = si.getRootFolder();
 
 	}
 
-	public void listHosts() throws InvalidProperty, RuntimeFault, RemoteException {
+	public ArrayList<String> listHosts() throws InvalidProperty, RuntimeFault, RemoteException {
 		ManagedEntity[] hosts= new InventoryNavigator(rootFolder).searchManagedEntities("HostSystem"); 
 
+		ArrayList<String> hostList=new ArrayList<String>();
+		
 		for(int i=0; i<hosts.length; i++)
 		{
 
 			HostSystem host= (HostSystem) hosts[i];
-			System.out.println("host:"+host.getName());
+			hostList.add(host.getName());
 
 		}
+		
+		return hostList;
 	}
 
 
+	//http://www.vmware.com/support/developer/vc-sdk/visdk41pubs/ApiReference/vim.UserDirectory.html
+
+	public ArrayList<String> listUsers() {
+		ArrayList<String> userList=new ArrayList<String>();		
+		
+		try {
+			UserSearchResult[] users=si.getUserDirectory().retrieveUserGroups(null, "", null, null, false, true, true);
+			for (int u=0; u<users.length; u++) {
+				userList.add(users[u].getPrincipal());
+			}
+		} catch (NotFound e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RuntimeFault e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return userList;
+		
+	}
+	
 	public ArrayList<String> listDataCenters() throws InvalidProperty, RuntimeFault, RemoteException {
 
 		ManagedEntity[] datacenters = new InventoryNavigator(rootFolder).searchManagedEntities("Datacenter");
@@ -138,6 +170,19 @@ public class VsphereServer {
 		return networkList;
 	}
 
+	public ArrayList<String> listVms() throws InvalidProperty, RuntimeFault, RemoteException  {
+
+		ArrayList<String> vmList=new ArrayList<String>();
+		
+		ManagedEntity[] vms=new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
+
+		for(int i=0; i<vms.length; i++)
+		{
+			vmList.add(vms[i].getName());
+		}
+		return vmList;
+	}
+	
 	
 	public VirtualMachine findVmByName(String vmName) throws InvalidProperty, RuntimeFault, RemoteException {
 		VirtualMachine existingVm = (VirtualMachine) new InventoryNavigator(rootFolder).searchManagedEntity("VirtualMachine",vmName);
@@ -528,7 +573,7 @@ public class VsphereServer {
 		for (int i=0; i< vmNics.length; i++ ) {
 
 			machineSpecs[vmDisks.length+1+i]= VsphereUtils.createNicSpec(
-					vmNics[i].getName(), vmNics[i].getNetwork(),false,true,vmNics[i].getType());
+					vmNics[i].getName(), vmNics[i].getNetwork(),vmNics[i].isStartConnected(),vmNics[i].isConnected(),vmNics[i].getType());
 		}   
 
 		vmSpec.setDeviceChange(machineSpecs);
@@ -617,4 +662,7 @@ public class VsphereServer {
 		}
 
 	}
+
+
+
 }

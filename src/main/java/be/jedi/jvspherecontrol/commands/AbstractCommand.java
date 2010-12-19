@@ -74,10 +74,10 @@ public  class AbstractCommand {
 		
 		while (optionsIterator.hasNext()) {
 			Option option=optionsIterator.next();
-			System.out.println("Required:"+option.isRequired());
-			System.out.println(option.getArgName());
-			System.out.println(option.getArgs());
-			System.out.println(option.getDescription());
+//			System.out.println("Required:"+option.isRequired());
+//			System.out.println(option.getArgName());
+//			System.out.println(option.getArgs());
+//			System.out.println(option.getDescription());
 
 		}
 //		formatter.printHelp( "java -jar jvspherecontrol.jar "+this.getKeyword()+" ", options );

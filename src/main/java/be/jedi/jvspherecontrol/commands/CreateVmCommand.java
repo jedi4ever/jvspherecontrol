@@ -139,6 +139,7 @@ public class CreateVmCommand extends VsphereCommand  {
 				vsphereServer.vncActivateVm(newVm,vmVncPort,vmVncPassword);
 			}
 
+			//TODO
 			if (vmPxeInterface!=null) {
 				vsphereServer.setVmPxebootInterface(newVm,vmPxeInterface);
 			}
@@ -199,7 +200,7 @@ public class CreateVmCommand extends VsphereCommand  {
 				throw new InvalidCLIArgumentSyntaxException("vmCpuCount must be an integer");
 			}
 		} else {
-			JVsphereControl.logger.debug("no vmCpuCount is given, using default value of "+vmCpus+" for vmCpuCount");
+			JVsphereControl.logger.debug("no cpus is given, using default value of "+vmCpus+" for cpus");
 		}
 		
 		//Memorysize of the new VM
@@ -292,6 +293,8 @@ public class CreateVmCommand extends VsphereCommand  {
 			}
 		}
 
+		
+		//Todo: set defaults if parameter is not specified:
 		vmDisks=new VmDisk[lastDisk];
 		for (int i=0; i< vmDisks.length; i++) {
 
@@ -299,6 +302,7 @@ public class CreateVmCommand extends VsphereCommand  {
 
 			String diskSize=cmdLine.getOptionValue("disksize"+(i+1));
 			String diskMode=cmdLine.getOptionValue("diskmode"+(i+1));
+			String diskDatastore=cmdLine.getOptionValue("diskdatastore"+(i+1));
 		
 			boolean vmDiskModeMatch=false;
 			for (int j=0; j< disk_modes_values.length; j++) {
@@ -314,14 +318,16 @@ public class CreateVmCommand extends VsphereCommand  {
 			
 			vmDisk.setSize(Long.parseLong(diskSize));
 			vmDisk.setMode(diskMode);
+	//		vmDisk.setDatastore(diskDataStore);
+			
 			vmDisks[i]=vmDisk;
 		}
 
 		
 		/*****  Network *****/		
-		//Network	
-		vmPxeInterface=cmdLine.getOptionValue("pxeinterface");
-		
+
+		//Todo: set defaults if parameter is not specified:
+
 		int lastNic=0;
 		for (int i=1; i< 20; i++) {
 			if (cmdLine.getOptionValues("nicname"+i)==null) {
@@ -335,12 +341,19 @@ public class CreateVmCommand extends VsphereCommand  {
 		
 		for (int i=0; i< vmNics.length; i++) {
 			String nicName=cmdLine.getOptionValue("nicname"+(i+1));
-//			String nicType=cmdLine.getOptionValue("nictype"+(i+1));
 			String nicNetwork=cmdLine.getOptionValue("nicnetwork"+(i+1));
+			String nicType=cmdLine.getOptionValue("nictype"+(i+1));
+			String nicConnected=cmdLine.getOptionValue("nicconnected"+(i+1));
+			String nicStartConnected=cmdLine.getOptionValue("nicstartconnected"+(i+1));
+			String nicPxe=cmdLine.getOptionValue("nicpxe"+(i+1));
+
 			VmNic vmNic=new VmNic();
 			vmNic.setName(nicName);
 //			vmNic.setType(nicType);
+//			vmNic.setStartConnected(nicStartConnected);
+//			vmNic.setConnected(nicConnected);
 			vmNic.setNetwork(nicNetwork);
+
 			vmNics[i]=vmNic;
 		}
 		
