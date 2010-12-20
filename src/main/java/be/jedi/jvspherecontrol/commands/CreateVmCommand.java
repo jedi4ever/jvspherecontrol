@@ -2,6 +2,12 @@ package be.jedi.jvspherecontrol.commands;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
@@ -415,4 +421,41 @@ public class CreateVmCommand extends VsphereCommand  {
 		options.addOption(OptionBuilder.withArgName("base64 string").hasArg().withDescription("omapi value").create("omapikeyvalue"));		
 		
 	}
+	
+	public String getHelp() {
+
+		String helpText="";
+		ArrayList<String> sortedCommands=new ArrayList<String>();
+		
+		Iterator<Option> optionIterator=options.getOptions().iterator();
+		while (optionIterator.hasNext()) {
+			Option option=optionIterator.next();
+			if (option.isRequired()) {
+				
+			}
+			String optionName=option.getOpt();
+			//If is a digit don't print if digit != 0
+			Matcher matcher = Pattern.compile("\\d+").matcher(optionName);
+			matcher.find();
+			try {
+				int n = Integer.valueOf(matcher.group());
+				if (n==1) {
+					sortedCommands.add("--"+option.getOpt()+"..n <"+option.getDescription()+">"+"\n");									
+				}
+
+			} catch (IllegalStateException ex) {
+				sortedCommands.add("--"+option.getOpt()+" <"+option.getDescription()+">"+"\n");				
+				
+			}
+		}
+		Collections.sort(sortedCommands);
+		
+        for (String line : sortedCommands) {
+        	helpText+=line;
+         }
+        
+		return helpText;
+	}
+	
+	
 }

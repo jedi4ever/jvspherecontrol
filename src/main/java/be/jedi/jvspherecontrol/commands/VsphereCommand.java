@@ -25,7 +25,7 @@ public class VsphereCommand extends AbstractCommand  {
 	void initOptions() {
 		super.initOptions();
 
-		Option help = new Option( "help", "print this message" ); options.addOption(help);
+
 
 		Option vsphereUrl=OptionBuilder.withArgName( "url" ).hasArg().withDescription(  "url to connect to" ).create( "url" );
 		vsphereUrl.setRequired(true);
@@ -67,4 +67,9 @@ public class VsphereCommand extends AbstractCommand  {
 		
 	}
 	
+	public String getHelp() {
+		return "--url <url to connect to>\n"+
+				"--user <username>\n"+
+				"--password <password>\n";
+	}
 }

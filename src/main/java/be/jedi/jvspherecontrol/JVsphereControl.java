@@ -1,19 +1,23 @@
 
 package be.jedi.jvspherecontrol;
-import java.awt.List;
+
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Arrays;
 
 import be.jedi.jvspherecontrol.commands.*;
 import be.jedi.jvspherecontrol.exceptions.InvalidCLIArgumentSyntaxException;
 import be.jedi.jvspherecontrol.exceptions.InvalidCLICommandException;
 import be.jedi.jvspherecontrol.exceptions.MissingCLIArgumentException;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.util.log.Log;
 
 
 public class JVsphereControl {
@@ -21,6 +25,8 @@ public class JVsphereControl {
 	public static Logger logger=Logger.getLogger(JVsphereControl.class);
 
 	ArrayList<AbstractCommand> commands=new ArrayList<AbstractCommand>();
+	Options options=new Options();
+	CommandLine cmdLine;
 
 	@SuppressWarnings("rawtypes")
 	String[] classlist = { 
@@ -53,6 +59,7 @@ public class JVsphereControl {
 		}
 	}
 
+
 	Integer execute() {
 		AbstractCommand command=getCommandByString(commandString);
 
@@ -66,16 +73,36 @@ public class JVsphereControl {
 	void validateArgs() throws MissingCLIArgumentException,InvalidCLICommandException, InvalidCLIArgumentSyntaxException {
 
 		String commandArguments[];
-
+		boolean helpRequest=false;
+		boolean debugRequest=false;
+	
 		//We need at least one argument
 		if (mainArgs.length>0) {
+
+			//check for help or debug
+			ArrayList<String> argsList=new ArrayList<String>(Arrays.asList(mainArgs));
+			
+			if (argsList.contains("--help")) {
+				helpRequest=true;
+			}
+
+			if (argsList.contains("--debug")) {
+				debugRequest=true;
+			}
 
 			//The first argument is the commandString
 			commandString=mainArgs[0];
 
+			if (helpRequest)
+			
 			//The commandString has to match a command
 			if (!availableCommands().contains(commandString)) {
-				throw new InvalidCLICommandException();
+				printHelp();
+				//throw new InvalidCLICommandException();
+			} else {
+				if (helpRequest) {
+					printHelp(commandString);
+				}
 			}
 
 			//The rest of the arguments are the commandArguments
@@ -87,6 +114,7 @@ public class JVsphereControl {
 				//we should print the commands and say <command> help
 			}
 
+			
 			//prepare a command
 			try {
 				AbstractCommand command=getCommandByString(commandString);
@@ -104,7 +132,6 @@ public class JVsphereControl {
 			throw ex;
 		}	
 		
-		printhelp();
 	}
 
 
@@ -149,20 +176,29 @@ public class JVsphereControl {
 			} catch (ClassNotFoundException e) {
 				logger.error("plugin class not found for command "+classlist[c]);
 			}
-
 		}
-
 	}	
 	
-	void printhelp(){
-		
+	void printHelp() {
+		printHelp(null);
+	}
+	void printHelp(String commandString){
+			
 		System.out.println("jvspherecontrol v0.1");
+		System.out.println("================================================");
 		for (int c=0; c< commands.size(); c++ ) {
-			if (commands.get(c).getKeyword().equals(commandString)) {
-				commands.get(c).printHelp();
+			if (commandString!=null) {
+				if (commands.get(c).getKeyword().equals(commandString)) {
+					System.out.println(commandString+"     "+commands.get(c).getHelp());
+				}
+			} else {
+				System.out.println(commands.get(c).getKeyword()+"     "+commands.get(c).getHelp());
+				
 			}
+			
 		}
 		
+		System.exit(0);
 	}
 
 }

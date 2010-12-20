@@ -8,6 +8,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -32,6 +33,11 @@ public  class AbstractCommand {
 	
 
 	String args[]; 
+
+	public String[] getArgs() {
+		return args;
+	}
+
 
 	ArrayList<Option> optionList=new ArrayList<Option>();
 	
@@ -66,6 +72,10 @@ public  class AbstractCommand {
 		printHelp();
 	}
 
+	public String getHelp() {
+		return "";
+	}
+	
 	public void printHelp() {
 		// automatically generate the help statement
 		HelpFormatter formatter = new HelpFormatter();
@@ -85,6 +95,15 @@ public  class AbstractCommand {
 	}
 
 	void initOptions() {
+		
+//		Option debugOption=OptionBuilder.withArgName( "level" ).hasArg().withDescription(  "more verbose output" ).create( "debug" );
+//		debugOption.setRequired(true);
+//		options.addOption(debugOption);
+//
+//		Option debugOption=OptionBuilder.withArgName( "level" ).hasArg().withDescription(  "more verbose output" ).create( "debug" );
+//		debugOption.setRequired(true);
+//		options.addOption(debugOption);
+
 			
 	}
 
