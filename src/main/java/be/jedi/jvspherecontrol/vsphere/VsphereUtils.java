@@ -110,8 +110,8 @@ public class VsphereUtils {
 
 	//  http://webcache.googleusercontent.com/search?q=cache:-IaJ930Lu4oJ:communities.vmware.com/servlet/JiveServlet/download/10742-1-28258/VMNetworkingOps.java%3Bjsessionid%3D08B9FD441B37D6093CEFFBF35C7C0909+VirtualPCNet32+java+E1000&cd=1&hl=nl&ct=clnk&gl=be&client=firefox-a 
 	// nic types = e1000,pcnet32,vmxnet2,vmxnet3
-	static public VirtualDeviceConfigSpec createNicSpec(String netName, 
-			String nicName,boolean startConnected,boolean connected,String nicAdapter) throws Exception
+	static public VirtualDeviceConfigSpec createNicSpec(String nicName, 
+			String nicNetwork,boolean startConnected,boolean connected,String nicAdapter) throws Exception
 			{
 
 
@@ -137,24 +137,21 @@ public class VsphereUtils {
 		}
 		
 		if (nic==null) {
-			throw new Exception("unknown nic adaptor type");
+			throw new Exception("unknown nic adaptor type: use e1000, pcnet32, vmxnet2, vmxnet3 ");
 		}
-		
-		
+			
 		
 		nic.setConnectable(new VirtualDeviceConnectInfo());
 		nic.connectable.setStartConnected(startConnected);
 		nic.connectable.setConnected(connected);
 
-
-
 		VirtualEthernetCardNetworkBackingInfo nicBacking = 
 			new VirtualEthernetCardNetworkBackingInfo();
-		nicBacking.setDeviceName(netName);
+		nicBacking.setDeviceName(nicNetwork);
 
 		Description info = new Description();
 		info.setLabel(nicName);
-		info.setSummary(netName);
+		info.setSummary(nicNetwork);
 		nic.setDeviceInfo(info);
 
 		// type: "generated", "manual", "assigned" by VC
@@ -166,7 +163,7 @@ public class VsphereUtils {
 		return nicSpec;
 			}
 
-	static public VirtualDeviceConfigSpec createAddCdConfigSpec(VirtualMachine vm, String dsName, String isoName) throws Exception 
+	static public VirtualDeviceConfigSpec createAddCdConfigSpec(VirtualMachine vm, String dsName, String isoPath) throws Exception 
 	{
 		VirtualDeviceConfigSpec cdSpec = new VirtualDeviceConfigSpec();
 
@@ -176,9 +173,8 @@ public class VsphereUtils {
 		VirtualCdromIsoBackingInfo cdDeviceBacking = new  VirtualCdromIsoBackingInfo();
 		DatastoreSummary ds = findDatastoreSummary(vm, dsName);
 		cdDeviceBacking.setDatastore(ds.getDatastore());
-		cdDeviceBacking.setFileName( isoName);
-		//    cdDeviceBacking.setFileName("[" + dsName +"] "+ vm.getName() 
-		//            + "/" + isoName);
+//		cdDeviceBacking.setFileName( isoName);
+		    cdDeviceBacking.setFileName("[" + dsName +"] "+ isoPath);
 
 		VirtualDevice vd = getIDEController(vm);          
 		cdrom.setBacking(cdDeviceBacking);                    

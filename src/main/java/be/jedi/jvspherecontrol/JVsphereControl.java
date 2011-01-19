@@ -13,6 +13,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.BasicConfigurator;
@@ -31,7 +32,8 @@ public class JVsphereControl {
 	@SuppressWarnings("rawtypes")
 	String[] classlist = { 
 		"be.jedi.jvspherecontrol.commands.ListVsphereCommand",
-		"be.jedi.jvspherecontrol.commands.CreateVmCommand"
+		"be.jedi.jvspherecontrol.commands.CreateVmCommand",
+		"be.jedi.jvspherecontrol.commands.GuestCommand"
 		//			ActivateVncInVmCommand.class,
 		//			SendVncTextCommand.class,
 	};
@@ -40,8 +42,7 @@ public class JVsphereControl {
 	String commandString;
 
 	public JVsphereControl(String[] args) {
-		BasicConfigurator.configure();
-		logger.setLevel(Level.DEBUG);
+
 		mainArgs=args;
 		loadCommands();
 	}
@@ -54,7 +55,8 @@ public class JVsphereControl {
 			jmachineControl.validateArgs();
 			jmachineControl.execute();
 		} catch (Exception e) {
-			e.printStackTrace();
+			jmachineControl.printHelp();
+			System.err.println("Error: "+e.getMessage());
 			System.exit(-1);
 		}
 	}
@@ -72,7 +74,7 @@ public class JVsphereControl {
 
 	void validateArgs() throws MissingCLIArgumentException,InvalidCLICommandException, InvalidCLIArgumentSyntaxException {
 
-		String commandArguments[];
+		String commandArguments[]={};
 		boolean helpRequest=false;
 		boolean debugRequest=false;
 	
@@ -87,11 +89,37 @@ public class JVsphereControl {
 			}
 
 			if (argsList.contains("--debug")) {
+				BasicConfigurator.configure();
+				logger.setLevel(Level.DEBUG);
 				debugRequest=true;
 			}
+			
+			//strip of args with --
+			ArrayList<String> filteredArgsList=new ArrayList<String>();
+			ArrayList<String> commandArgsList=new ArrayList<String>();
 
+			int nonOptionCounter=0;
+			for (String a : argsList) {
+				//for all plain arguments , no options
+				if (!a.startsWith("-")) {
+					filteredArgsList.add(a);
+
+					//If this is the second or more option add it to the commandArgs
+					nonOptionCounter++;
+					if (!(nonOptionCounter==1))
+					{
+						commandArgsList.add((String)a);
+					}
+
+				} else {
+					commandArgsList.add((String)a);					
+				}
+
+			}
+
+			
 			//The first argument is the commandString
-			commandString=mainArgs[0];
+			commandString=filteredArgsList.get(0);
 
 			if (helpRequest)
 			
@@ -105,19 +133,27 @@ public class JVsphereControl {
 				}
 			}
 
+			//We need to filter out the command and pass the rest
+			
 			//The rest of the arguments are the commandArguments
 			if (mainArgs.length>1) {
-				commandArguments=new String[mainArgs.length-1];
-				System.arraycopy(mainArgs, 1, commandArguments, 0,mainArgs.length-1);
+				commandArguments=new String[commandArgsList.size()];
+				System.arraycopy(commandArgsList.toArray(), 0, commandArguments, 0,commandArgsList.size());
+
 			} else {
 				commandArguments=null;
 				//we should print the commands and say <command> help
+				printHelp();
 			}
 
-			
 			//prepare a command
 			try {
 				AbstractCommand command=getCommandByString(commandString);
+				if (command==null)  {
+					//Not a valid command
+					InvalidCLIArgumentSyntaxException ex=new InvalidCLIArgumentSyntaxException("Unknown command:"+commandString);
+					throw ex;
+				}
 				command.init(commandArguments);
 				command.validateArgs();
 
@@ -198,7 +234,7 @@ public class JVsphereControl {
 			
 		}
 		
-		System.exit(0);
+
 	}
 
 }

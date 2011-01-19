@@ -41,13 +41,15 @@ public class CreateVmCommand extends VsphereCommand  {
 	public VmNic[] vmNics;	
 	public VmDisk[] vmDisks;	
 
-	public String vmCdromIsoFile;
+	public String vmCdromIsoPath;
 	public String vmCdromDataStoreName;
 	
 	public String vmPxeInterface;
 	public boolean vmVncActivate;	
 	public String vmVncPassword;
 	public int vmVncPort;
+	
+	public String vmBootOrder;
 	
 	public boolean vmOmapiRegister=false;
 	public boolean omapiOverWrite=false;
@@ -127,7 +129,7 @@ public class CreateVmCommand extends VsphereCommand  {
 					vsphereServer.destroyVm(existingVm);	  		
 
 				} else {
-					System.out.println("use overwrite=true to overwrite");
+					System.out.println("use --overwrite true to overwrite");
 					System.exit(1);
 				}
 			} 
@@ -136,8 +138,8 @@ public class CreateVmCommand extends VsphereCommand  {
 					vmCpus,vmOsType,vmDisks,
 					vmNics,vsphereDataCenterName,vsphereDataStoreName);
 
-			if (vmCdromIsoFile!=null) {
-				vsphereServer.setCdromVm(newVm,vmCdromIsoFile,vmCdromDataStoreName);
+			if (vmCdromIsoPath!=null) {
+				vsphereServer.setCdromVm(newVm,vmCdromIsoPath,vmCdromDataStoreName);
 				
 			}
 
@@ -145,10 +147,15 @@ public class CreateVmCommand extends VsphereCommand  {
 				vsphereServer.vncActivateVm(newVm,vmVncPort,vmVncPassword);
 			}
 
-			//TODO
-			if (vmPxeInterface!=null) {
-				vsphereServer.setVmPxebootInterface(newVm,vmPxeInterface);
-			}
+			String pxeInterface="";			
+			//Determine the PXE interface
+			for (int i=0; i< vmNics.length; i++) {
+				if (vmNics[i].isPxe()) {
+					System.out.println("enabling pxe on interface"+vmNics[i].getName());
+					pxeInterface="Network Adapter "+(i+1);
+					vsphereServer.setVmPxebootInterface(newVm,pxeInterface);
+				}
+			}		
 
 			//Enough config, let's prepare the server for it's first boot
 			vsphereServer.setEnterBiosVm(newVm,true);
@@ -165,14 +172,21 @@ public class CreateVmCommand extends VsphereCommand  {
 			//flip the enterbios flag
 			vsphereServer.setEnterBiosVm(newVm,false);
 			
-			vsphereServer.setBootOrderVm(newVm, "allow:net");
+			if (vmBootOrder!=null) {
+				//allow:net
+				vsphereServer.setBootOrderVm(newVm, vmBootOrder);				
+			}
+
+			//if (vmPxeInterface!=null) {
+			//	vsphereServer.setVmPxebootInterface(newVm,vmPxeInterface);
+			//}
 
 			//vsphereServer.listNicsVm(newVm);
 			if (vmOmapiRegister) {
 				System.out.println("registering nic:"+vmPxeInterface);
 
 				OmapiServer omapiServer=new OmapiServer(omapiHost,omapiPort,omapiKeyName, omapiKeyValue);
-				String macAddress=vsphereServer.getMacAddress(vmPxeInterface,newVm);
+				String macAddress=vsphereServer.getMacAddress(pxeInterface,newVm);
 				omapiServer.updateDHCP(vmName, macAddress,omapiOverWrite);
 				System.out.println(macAddress);
 			}
@@ -203,7 +217,7 @@ public class CreateVmCommand extends VsphereCommand  {
 			try {
 				this.vmCpus=Integer.parseInt(vmCpusString);
 			} catch (NumberFormatException ex) {
-				throw new InvalidCLIArgumentSyntaxException("vmCpuCount must be an integer");
+				throw new InvalidCLIArgumentSyntaxException("cpus must be an integer");
 			}
 		} else {
 			JVsphereControl.logger.debug("no cpus is given, using default value of "+vmCpus+" for cpus");
@@ -224,7 +238,36 @@ public class CreateVmCommand extends VsphereCommand  {
 		
 		///Option GuesOsId - http://www.vmware.com/support/developer/windowstoolkit/wintk40u1/html/Set-VM.html
 		//we need to check this against a list!
+		String osTypes[]={"asianux3Guest", "asianux4_64Guest", "asianux4Guest", "darwin64Guest", "darwinGuest", "debian4_64Guest",
+		                       "debian4Guest", "debian5_64Guest", "debian5Guest", "dosGuest", "freebsd64Guest", "freebsdGuest",
+		                       "mandrivaGuest", "netware4Guest", "netware5Guest", "netware6Guest", "nld9Guest", "oesGuest", "openServer5Guest", 
+		                       "openServer6Guest", "os2Guest", "other24xLinux64Guest", "other24xLinuxGuest", "other26xLinux64Guest", "other26xLinuxGuest", 
+		                       "other26xLinuxGuest", "otherGuest", "otherGuest64", "otherLinux64Guest", "otherLinuxGuest", "redhatGuest", "rhel2Guest", 
+		                       "rhel3_64Guest", "rhel3Guest", "rhel4_64Guest", "rhel4Guest", "rhel5_64Guest", "rhel5Guest", "rhel6_64Guest", "rhel6Guest", 
+		                       "sjdsGuest", "sles10_64Guest", "sles10Guest", "sles11_64Guest", "sles11Guest", "sles64Guest", "slesGuest", "solaris10_64Guest",
+		                       "solaris10Guest", "solaris6Guest", "solaris7Guest", "solaris8Guest", "solaris9Guest", "suse64Guest", "suseGuest", "turboLinux64Guest", 
+		                       "turboLinuxGuest", "ubuntu64Guest", "ubuntuGuest", "unixWare7Guest", "win2000AdvServGuest", "win2000ProGuest", "win2000ServGuest", "win31Guest", 
+		                       "win95Guest", "win98Guest", "windows7_64Guest", "windows7Guest", "windows7Server64Guest", "winLonghorn64Guest", "winLonghornGuest", "winMeGuest",
+		                       "winNetBusinessGuest", "winNetDatacenter64Guest", "winNetDatacenterGuest", "winNetDatacenterGuest", "winNetDatacenterGuest", "winNetDatacenterGuest",
+		                       "winNetEnterprise64Guest", "winNetEnterpriseGuest", "winNetStandard64Guest", "winNetEnterpriseGuest", "winNetStandard64Guest", "winNetStandardGuest",
+		                       "winNetWebGuest", "winNTGuest", "winVista64Guest", "winVistaGuest", "winXPHomeGuest", "winXPPro64Guest", "winXPProGuest"};
+		
 		vmOsType=cmdLine.getOptionValue("ostype");
+		boolean knownOs=false;
+		for (int o=0 ; o< osTypes.length; o++) {
+			if (vmOsType.toLowerCase().equals(osTypes[o].toLowerCase())) {
+				knownOs=true;
+				break;
+			}
+		}
+
+		if (!knownOs) {
+			String osTypeString="";
+			for (int o=0 ; o< osTypes.length; o++) {
+				osTypeString=osTypeString+osTypes[o]+",";
+			}			
+			throw new InvalidCLIArgumentSyntaxException(" ostype must be one of the following: "+osTypeString);
+		}
 
 		//Overwrite the VM or not 
 		String vmOverwriteString=cmdLine.getOptionValue("overwrite");
@@ -324,7 +367,7 @@ public class CreateVmCommand extends VsphereCommand  {
 			
 			vmDisk.setSize(Long.parseLong(diskSize));
 			vmDisk.setMode(diskMode);
-	//		vmDisk.setDatastore(diskDataStore);
+			vmDisk.setDatastore(diskDatastore);
 			
 			vmDisks[i]=vmDisk;
 		}
@@ -349,15 +392,37 @@ public class CreateVmCommand extends VsphereCommand  {
 			String nicName=cmdLine.getOptionValue("nicname"+(i+1));
 			String nicNetwork=cmdLine.getOptionValue("nicnetwork"+(i+1));
 			String nicType=cmdLine.getOptionValue("nictype"+(i+1));
-			String nicConnected=cmdLine.getOptionValue("nicconnected"+(i+1));
-			String nicStartConnected=cmdLine.getOptionValue("nicstartconnected"+(i+1));
-			String nicPxe=cmdLine.getOptionValue("nicpxe"+(i+1));
+			Boolean nicConnected=true;
+			Boolean nicStartConnected=true;
+			Boolean nicPxe=false;
+			
+			//Default connected = true
+			String nicConnectedString=cmdLine.getOptionValue("nicconnected"+(i+1));
+			if (nicConnectedString!=null) {
+				nicConnected=Boolean.parseBoolean(nicConnectedString);	
+			}
 
+			//Default startConnected = true
+			String nicStartConnectedString=cmdLine.getOptionValue("nicstartconnected"+(i+1));
+			if (nicStartConnectedString!=null) {
+				nicStartConnected=Boolean.parseBoolean(nicStartConnectedString);	
+			}
+
+			//Default pxe = true
+			String nicPxeString=cmdLine.getOptionValue("nicpxe"+(i+1));
+			if (nicPxeString!=null) {
+				nicPxe=Boolean.parseBoolean(nicPxeString);	
+				System.err.println("pxe:"+(i+1)+"-"+nicPxe);
+			}
+	
 			VmNic vmNic=new VmNic();
 			vmNic.setName(nicName);
-//			vmNic.setType(nicType);
-//			vmNic.setStartConnected(nicStartConnected);
-//			vmNic.setConnected(nicConnected);
+			vmNic.setType(nicType);
+			vmNic.setStartConnected(nicStartConnected);
+			vmNic.setConnected(nicConnected);
+			vmNic.setPxe(nicPxe);
+			
+			System.err.println("Network"+nicNetwork);
 			vmNic.setNetwork(nicNetwork);
 
 			vmNics[i]=vmNic;
@@ -365,9 +430,17 @@ public class CreateVmCommand extends VsphereCommand  {
 		
 		
 		//CDROM
-		vmCdromIsoFile=cmdLine.getOptionValue("cdromisofile");
+		vmCdromIsoPath=cmdLine.getOptionValue("cdromisopath");
+		
+		//Strip leading slash
+		if (vmCdromIsoPath!=null && vmCdromIsoPath.startsWith("/")) {
+			vmCdromIsoPath=vmCdromIsoPath.substring(1);
+		}
 		vmCdromDataStoreName=cmdLine.getOptionValue("cdromdatastore");
 
+		//Bootorder
+		vmBootOrder=cmdLine.getOptionValue("bootorder");
+		
 	}
 	
 
@@ -394,17 +467,23 @@ public class CreateVmCommand extends VsphereCommand  {
 
 		options.addOption(OptionBuilder.withArgName( "count" ).hasArg().withDescription(  "number of cpu's to allocate" ).create( "cpus" ));
 
+		options.addOption(OptionBuilder.withArgName( "order" ).hasArg().withDescription(  "order to boot: allow:cd,hd,net or deny:net,cd" ).create( "bootorder" ));
+
 		
-		options.addOption(OptionBuilder.withArgName( "filename" ).hasArg().withDescription(  "dvd isofile" ).create( "cdromisofile" ));
+		options.addOption(OptionBuilder.withArgName( "path" ).hasArg().withDescription(  "path to dvd isofile" ).create( "cdromisopath" ));
 		options.addOption(OptionBuilder.withArgName( "name" ).hasArg().withDescription(  "dvd datastorename" ).create( "cdromdatastore" ));		
 
 		for (int i=1;i < 20; i++) {
 			options.addOption(OptionBuilder.withArgName( "name" ).hasArgs().withDescription(  "name of the Nic interface" ).create( "nicname"+i ));
 			options.addOption(OptionBuilder.withArgName( "type" ).hasArgs().withDescription(  "type of the Nic interface" ).create( "nictype"+i ));
 			options.addOption(OptionBuilder.withArgName( "network" ).hasArgs().withDescription(  "network of the Nic interface" ).create( "nicnetwork"+i ));
-
+			options.addOption(OptionBuilder.withArgName("true|false").hasArg().withDescription("connect Nic or not").create("nicconnected"+i ));		
+			options.addOption(OptionBuilder.withArgName("true|false").hasArg().withDescription("connect Nic at start or not ").create("nicstartconnected"+i ));		
+			options.addOption(OptionBuilder.withArgName("true|false").hasArg().withDescription("enable Nic pxe boot or not ").create("nicpxe"+i ));		
+			
 			options.addOption(OptionBuilder.withArgName( "size" ).hasArgs().withDescription(  "size in kb of disk to create" ).create( "disksize"+i ));
 			options.addOption(OptionBuilder.withArgName( "persistent|independent_persistent|independent_nonpersistent" ).hasArgs().withDescription(  "disk mode" ).create( "diskmode"+i ));
+			options.addOption(OptionBuilder.withArgName( "name" ).hasArgs().withDescription(  "name of the datastore to create the disk" ).create( "diskdatatastore"+i ));
 		
 		}
 		

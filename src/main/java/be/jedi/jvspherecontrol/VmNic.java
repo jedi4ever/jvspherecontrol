@@ -7,6 +7,7 @@ public class VmNic {
 	String network=null;
 	boolean connected=true;
 	boolean startConnected=true;
+	boolean pxe=true;
 
 	public String getName() {
 		return name;
@@ -38,6 +39,13 @@ public class VmNic {
 	public void setStartConnected(boolean startConnected) {
 		this.startConnected = startConnected;
 	}
+	
+	public void setPxe(Boolean nicPxe) {
+		this.pxe = nicPxe;
+	}
 
+	public boolean isPxe() {
+		return pxe;
+	}
 	
 }

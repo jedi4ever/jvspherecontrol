@@ -355,7 +355,7 @@ public class VsphereServer {
 	}
 	
 	
-	public void setVmPxebootInterface(VirtualMachine vm, String vmPxeInterface) throws InvalidName, VmConfigFault, DuplicateName, TaskInProgress, FileFault, InvalidState, ConcurrentAccess, InvalidDatastore, InsufficientResourcesFault, RuntimeFault, RemoteException, InterruptedException {
+	public void setVmPxebootInterface(VirtualMachine vm, String interfaceName) throws InvalidName, VmConfigFault, DuplicateName, TaskInProgress, FileFault, InvalidState, ConcurrentAccess, InvalidDatastore, InsufficientResourcesFault, RuntimeFault, RemoteException, InterruptedException {
 		//Set only boot from net on one of the interface (disable pxe)
 		//http://virtualfoundry.blogspot.com/2009/05/secrets-of-e1000.html
 		//http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=1014906
@@ -378,6 +378,7 @@ public class VsphereServer {
 			if (devices[i] instanceof VirtualEthernetCard) {
 
 				String nicName=devices[i].getDeviceInfo().getLabel();
+				
 
 				String nicType="unknown";
 				if (devices[i] instanceof VirtualE1000) {
@@ -385,8 +386,9 @@ public class VsphereServer {
 					nicType="e1000";
 				}
 
-				if (!nicName.toLowerCase().equals(vmPxeInterface.toLowerCase())) {
+				if (!nicName.toLowerCase().equals(interfaceName.toLowerCase())) {
 					if (nicType=="e1000") {
+						System.err.println("Disabling pxe on "+nicName+"-"+interfaceName);
 						OptionValue nicSpec=new OptionValue() ;nicSpec.setKey("ethernet"+(e1000Counter-1)+".opromsize");nicSpec.setValue("0");
 						extraConfig.add(nicSpec);
 
@@ -612,12 +614,12 @@ public class VsphereServer {
 
 
 
-	public void setCdromVm(VirtualMachine newVm, String vmCdromIsoFile,String vsphereDataStoreName) throws Exception {
+	public void setCdromVm(VirtualMachine newVm, String vmCdromIsoPath,String vsphereDataStoreName) throws Exception {
 		//Now add the cdrom
 
 		System.err.println(vsphereDataStoreName);
-		if (vmCdromIsoFile!=null) {
-			VirtualDeviceConfigSpec cdSpec = VsphereUtils.createAddCdConfigSpec(newVm, vsphereDataStoreName, vmCdromIsoFile);
+		if (vmCdromIsoPath!=null) {
+			VirtualDeviceConfigSpec cdSpec = VsphereUtils.createAddCdConfigSpec(newVm, vsphereDataStoreName, vmCdromIsoPath);
 			VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
 
 			vmConfigSpec.setDeviceChange(new VirtualDeviceConfigSpec[]{cdSpec});

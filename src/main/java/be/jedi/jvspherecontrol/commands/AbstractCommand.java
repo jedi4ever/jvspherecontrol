@@ -19,6 +19,7 @@ import be.jedi.jvspherecontrol.exceptions.MissingCLIArgumentException;
 public  class AbstractCommand {
 
 
+
 	public static String keyword="abstract command"; 
 	public static String description="you should never see this"; 
 	CommandLine cmdLine;
@@ -60,6 +61,7 @@ public  class AbstractCommand {
 		try {
 			// parse the command line arguments
 			cmdLine = parser.parse( options, args );
+
 		}
 		catch( ParseException exp ) {
 			// oops, something went wrong

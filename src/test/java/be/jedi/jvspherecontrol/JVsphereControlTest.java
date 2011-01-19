@@ -54,7 +54,7 @@ public class JVsphereControlTest {
 	/* This is a valid command createvm, has vsphere options but it misses the mandatory options for the create command */
 	@Test
 	public void testValidCommandCreateVmMissingCreateOptions() {
-		String args[]= { "createvm","--url=https://esx.example.org","--user=esxadmin","--password=mypassword"};
+		String args[]= { "createvm","--url=https://esx.example.org/sdk","--user=esxadmin","--password=mypassword"};
 
 		try {
 			JVsphereControl vspherecontrol=new JVsphereControl(args);
@@ -76,8 +76,8 @@ public class JVsphereControlTest {
 
 	@Test
 	public void testValidCommandCreateVmMinimalOptions() {
-		String args[]= { "createvm","--url=https://esx.example.org","--user=esxadmin","--password=mypassword",
-				"--name=testvm", "--memory=256","--ostype=Ubuntu64"				
+		String args[]= { "createvm","--url=https://esx.example.org/sdk","--user=esxadmin","--password=mypassword",
+				"--name=testvm", "--memory=256","--ostype=Ubuntu64Guest"				
 		};
 
 		try {
@@ -104,8 +104,8 @@ public class JVsphereControlTest {
 
 	@Test
 	public void testValidCommandCreateVmMinimalOptionsBadMemory() {
-		String args[]= { "createvm","--url=https://esx.example.org","--user=esxadmin","--password=mypassword",
-				"--name=testvm", "--memory=2MMM","--ostype=Ubuntu64", "--diskmode1=persistent", "--disksize1=100000"				
+		String args[]= { "createvm","--url=https://esx.example.org/sdk","--user=esxadmin","--password=mypassword",
+				"--name=testvm", "--memory=2MMM","--ostype=Ubuntu64Guest", "--diskmode1=persistent", "--disksize1=100000"				
 		};
 
 		try {
@@ -130,8 +130,8 @@ public class JVsphereControlTest {
 
 	@Test
 	public void testValidCommandCreateVmMinimalOptionsBadVsphereUrl() {
-		String args[]= { "createvm","--url=httpppp://esx.example.org","--user=esxadmin","--password=mypassword",
-				"--name=testvm", "--memory=256","--ostype=Ubuntu64", "--diskmode1=persistent", "--disksize1=100000"			
+		String args[]= { "createvm","--url=httpppp://esx.example.org/sdk","--user=esxadmin","--password=mypassword",
+				"--name=testvm", "--memory=256","--ostype=Ubuntu64Guest", "--diskmode1=persistent", "--disksize1=100000"			
 		};
 
 		try {

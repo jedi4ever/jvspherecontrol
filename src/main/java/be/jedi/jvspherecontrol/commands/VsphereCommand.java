@@ -61,6 +61,10 @@ public class VsphereCommand extends AbstractCommand  {
 			throw new InvalidCLIArgumentSyntaxException("url has an invalid URL syntax: "+e.getMessage());
 		}
 		
+		if (!vsphereUrl.endsWith("/sdk")) {
+			throw new InvalidCLIArgumentSyntaxException("url needs to include the sdk part: f.i https://servername/sdk");
+			
+		}
 		
 		vsphereUsername=cmdLine.getOptionValue("user");
 		vspherePassword=cmdLine.getOptionValue("password");
@@ -68,7 +72,7 @@ public class VsphereCommand extends AbstractCommand  {
 	}
 	
 	public String getHelp() {
-		return "--url <url to connect to>\n"+
+		return "--url <url to connect to (including the sdk part>\n"+
 				"--user <username>\n"+
 				"--password <password>\n";
 	}
