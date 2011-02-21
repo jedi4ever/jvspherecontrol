@@ -337,6 +337,7 @@ public class CreateVmCommand extends VsphereCommand  {
 		//We need to check this against the available datacenter and datastores
 		vsphereDataCenterName=cmdLine.getOptionValue("datacenter");
 		vsphereDataStoreName=cmdLine.getOptionValue("datastore");
+		vsphereClusterName=cmdLine.getOptionValue("cluster");
 		
 		
 		/*****  Disks *****/	

@@ -574,23 +574,24 @@ public class VsphereServer {
 			VmNic[] vmNics, String vmDataCenterName, String vmDataStoreName, String vmClusterName ) throws Exception {
 		//	ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
 
+		System.out.println("Datacenter:"+vmDataCenterName);
 		Datacenter dc = (Datacenter) new InventoryNavigator(rootFolder).searchManagedEntity("Datacenter", vmDataCenterName);
 
 		//Now find the correct resourcepool to create the vm
 		ManagedEntity[] resourcepools = new InventoryNavigator(rootFolder).searchManagedEntities("ResourcePool");
 
-		ArrayList<String> resourcePoolList=new ArrayList<String>();
 		
 		ResourcePool rp = null;
+
+		System.out.println("Cluster:"+vmClusterName);
 		
 		for(int i=0; i<resourcepools.length; i++)
 		{
 			ResourcePool resourcepool = (ResourcePool) resourcepools[i];
-			if (resourcepools[i].getName().equals(vmClusterName)) {
+			if (resourcepools[i].getParent().getName().equals(vmClusterName)) {
 				System.out.println("using cluster/resourcepool "+vmClusterName);
 				rp= (ResourcePool)resourcepools[i];
 			}
-			resourcePoolList.add(resourcepool.getParent().getName());
 		}
 
 		Folder vmFolder = dc.getVmFolder();
@@ -674,7 +675,7 @@ public class VsphereServer {
 			System.out.println("VM could not be created. Error:");
 			if (task.getTaskInfo() != null && task.getTaskInfo().getError() != null)
 			{           
-				System.out.println("Task change ip detailed error :" + task.getTaskInfo().getError().getLocalizedMessage()); 
+				System.out.println("Task detailed error :" + task.getTaskInfo().getError().getLocalizedMessage()); 
 			}
 			System.exit(-1);
 		}		
