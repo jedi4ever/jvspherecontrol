@@ -1,5 +1,12 @@
 package be.jedi.jvspherecontrol.commands;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
 import be.jedi.jvncsender.VncSender;
@@ -10,7 +17,7 @@ import be.jedi.jvspherecontrol.exceptions.MissingCLIArgumentException;
 
 public class SendVncTextCommand extends AbstractCommand  {
 
-	public static String keyword="sendVncText"; 
+	public static String keyword="sendvnctext"; 
 	public static String description="send text strings to a vnc server";
 
 	private boolean vncSendAction;
@@ -23,6 +30,14 @@ public class SendVncTextCommand extends AbstractCommand  {
 		super();	
 	}
 	
+	 public String getKeyword() {
+			return keyword;
+		}
+
+		 public String getDescription() {
+			return description;
+		}
+		 
 	public void validateArgs() throws MissingCLIArgumentException, InvalidCLIArgumentSyntaxException{
 		
 		super.validateArgs();
@@ -53,6 +68,41 @@ public class SendVncTextCommand extends AbstractCommand  {
 		
 		vncSender.sendText(vncText);	
 
+	}
+	
+	public String getHelp() {
+
+		String helpText="";
+		ArrayList<String> sortedCommands=new ArrayList<String>();
+		
+		Iterator<Option> optionIterator=options.getOptions().iterator();
+		while (optionIterator.hasNext()) {
+			Option option=optionIterator.next();
+			if (option.isRequired()) {
+				
+			}
+			String optionName=option.getOpt();
+			//If is a digit don't print if digit != 0
+			Matcher matcher = Pattern.compile("\\d+").matcher(optionName);
+			matcher.find();
+			try {
+				int n = Integer.valueOf(matcher.group());
+				if (n==1) {
+					sortedCommands.add("--"+option.getOpt()+"..n <"+option.getDescription()+">"+"\n");									
+				}
+
+			} catch (IllegalStateException ex) {
+				sortedCommands.add("--"+option.getOpt()+" <"+option.getDescription()+">"+"\n");				
+				
+			}
+		}
+		Collections.sort(sortedCommands);
+		
+        for (String line : sortedCommands) {
+        	helpText+=line;
+         }
+        
+		return helpText;
 	}
 
 }

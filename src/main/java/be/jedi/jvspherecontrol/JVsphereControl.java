@@ -34,7 +34,11 @@ public class JVsphereControl {
 		"be.jedi.jvspherecontrol.commands.ListVsphereCommand",
 		"be.jedi.jvspherecontrol.commands.CreateVmCommand",
 		"be.jedi.jvspherecontrol.commands.GuestCommand", 
-		"be.jedi.jvspherecontrol.commands.OmapiRegisterCommand"
+		"be.jedi.jvspherecontrol.commands.OmapiRegisterCommand",
+		"be.jedi.jvspherecontrol.commands.ActivateVncInVmCommand",
+		"be.jedi.jvspherecontrol.commands.DeActivateVncInVmCommand",
+		"be.jedi.jvspherecontrol.commands.SendVncTextCommand"
+
 		//			ActivateVncInVmCommand.class,
 		//			SendVncTextCommand.class,
 	};
