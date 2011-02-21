@@ -33,7 +33,8 @@ public class JVsphereControl {
 	String[] classlist = { 
 		"be.jedi.jvspherecontrol.commands.ListVsphereCommand",
 		"be.jedi.jvspherecontrol.commands.CreateVmCommand",
-		"be.jedi.jvspherecontrol.commands.GuestCommand"
+		"be.jedi.jvspherecontrol.commands.GuestCommand", 
+		"be.jedi.jvspherecontrol.commands.OmapiRegisterCommand"
 		//			ActivateVncInVmCommand.class,
 		//			SendVncTextCommand.class,
 	};

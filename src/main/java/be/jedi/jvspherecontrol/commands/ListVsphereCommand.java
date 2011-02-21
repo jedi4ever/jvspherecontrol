@@ -14,7 +14,7 @@ public class ListVsphereCommand extends VsphereCommand {
 	public static String keyword="list"; 
 	public static String description="this list various things of the vsphere server"; 
 
-	String[] listItems= { "hosts", "datacenters", "datastores" , "networks" , "users", "vms", "all"};
+	String[] listItems= { "hosts", "datacenters", "datastores" , "clusters",  "networks" , "users", "vms", "all", "resourcepools"};
 	String listItem="all";
 	
 	public String getKeyword() {
@@ -58,6 +58,12 @@ public class ListVsphereCommand extends VsphereCommand {
 					System.out.println("Datacenter found: "+datacenter);					
 				}	
 			}
+
+			if ((listItem.equals("clusters")) || (listItem.equals("all"))) {
+				for (String cluster :vsphereServer.listClusters() ) {
+					System.out.println("Cluster found: "+cluster);					
+				}	
+			}
 			
 			if ((listItem.equals("datastores")) || (listItem.equals("all"))) {
 				for (String datastore :vsphereServer.listDataStores() ) {
@@ -83,6 +89,12 @@ public class ListVsphereCommand extends VsphereCommand {
 			for (String vm :vsphereServer.listVms() ) {
 				System.out.println("Vm found: "+vm);					
 			}
+			}
+			
+			if ((listItem.equals("resourcepools")) || (listItem.equals("all"))) {
+				for (String resourcepool :vsphereServer.listResourcePools() ) {
+					System.out.println("Resourcepool found: "+resourcepool);					
+				}	
 			}
 
 		} catch (RemoteException e) {

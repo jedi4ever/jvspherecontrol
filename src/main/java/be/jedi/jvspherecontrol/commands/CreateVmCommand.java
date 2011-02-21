@@ -37,6 +37,7 @@ public class CreateVmCommand extends VsphereCommand  {
 	
 	public String vsphereDataStoreName="datastore1";
 	public String vsphereDataCenterName="ha-datacenter";
+	public String vsphereClusterName=null;
 	
 	public VmNic[] vmNics;	
 	public VmDisk[] vmDisks;	
@@ -86,7 +87,14 @@ public class CreateVmCommand extends VsphereCommand  {
 			ArrayList<String> datacenters=vsphereServer.listDataCenters();
 			ArrayList<String> datastores=vsphereServer.listDataStores();
 			ArrayList<String> networks=vsphereServer.listNetworks();
-			
+			ArrayList<String> clusters=vsphereServer.listClusters();
+
+			//Check cluster
+			if (!clusters.contains(vsphereClusterName)) {
+				System.err.println("cluster "+vsphereClusterName+" does not exist");
+				System.exit(-1);				
+			}		
+		
 			//Check datastore
 			if (!datastores.contains(vsphereDataStoreName)) {
 				System.err.println("datastore "+vsphereDataStoreName+" does not exist");
@@ -136,7 +144,7 @@ public class CreateVmCommand extends VsphereCommand  {
 
 			VirtualMachine newVm=vsphereServer.createVm(vmName,vmMemory,
 					vmCpus,vmOsType,vmDisks,
-					vmNics,vsphereDataCenterName,vsphereDataStoreName);
+					vmNics,vsphereDataCenterName,vsphereDataStoreName,vsphereClusterName);
 
 			if (vmCdromIsoPath!=null) {
 				vsphereServer.setCdromVm(newVm,vmCdromIsoPath,vmCdromDataStoreName);
@@ -463,6 +471,7 @@ public class CreateVmCommand extends VsphereCommand  {
 
 		options.addOption(OptionBuilder.withArgName( "name" ).hasArg().withDescription(  "name of the datacenter to store new Vm" ).create( "datacenter" ));
 		options.addOption(OptionBuilder.withArgName( "name" ).hasArg().withDescription(  "name of the datastore to store new Vm" ).create( "datastore" ));
+		options.addOption(OptionBuilder.withArgName( "name" ).hasArg().withDescription(  "name of the cluster to store new Vm" ).create( "cluster" ));
 
 
 		options.addOption(OptionBuilder.withArgName( "count" ).hasArg().withDescription(  "number of cpu's to allocate" ).create( "cpus" ));

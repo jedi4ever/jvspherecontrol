@@ -31,6 +31,7 @@ import com.vmware.vim25.VirtualMachineFileInfo;
 import com.vmware.vim25.VirtualMachinePowerState;
 import com.vmware.vim25.VirtualMachineRuntimeInfo;
 import com.vmware.vim25.VmConfigFault;
+import com.vmware.vim25.mo.ClusterComputeResource;
 import com.vmware.vim25.mo.Datacenter;
 import com.vmware.vim25.mo.Datastore;
 import com.vmware.vim25.mo.Folder;
@@ -122,6 +123,7 @@ public class VsphereServer {
 
 		ArrayList<String> datacenterList=new ArrayList<String>();
 		
+		
 		for(int i=0; i<datacenters.length; i++)
 		{
 			Datacenter dc = (Datacenter) datacenters[i];
@@ -130,6 +132,22 @@ public class VsphereServer {
 		return datacenterList;
 	}
 
+	public ArrayList<String> listClusters() throws InvalidProperty, RuntimeFault, RemoteException {
+
+		ManagedEntity[] clusters = new InventoryNavigator(rootFolder).searchManagedEntities("ClusterComputeResource");
+
+		ArrayList<String> clusterList=new ArrayList<String>();
+		
+		ClusterComputeResource a;
+		
+		for(int i=0; i<clusters.length; i++)
+		{
+			ClusterComputeResource cluster = (ClusterComputeResource) clusters[i];
+			clusterList.add(cluster.getName());
+		}
+		return clusterList;
+	}
+	
 	public ArrayList<String> listDataStores() throws InvalidProperty, RuntimeFault, RemoteException {
 
 		ManagedEntity[] datacenters = new InventoryNavigator(rootFolder).searchManagedEntities("Datacenter");
@@ -149,6 +167,24 @@ public class VsphereServer {
 
 	}
 
+	public ArrayList<String> listResourcePools() throws InvalidProperty, RuntimeFault, RemoteException {
+
+		ManagedEntity[] resourcepools = new InventoryNavigator(rootFolder).searchManagedEntities("ResourcePool");
+
+		ArrayList<String> resourcePoolList=new ArrayList<String>();
+		
+		for(int i=0; i<resourcepools.length; i++)
+		{
+			ResourcePool resourcepool = (ResourcePool) resourcepools[i];
+
+			resourcePoolList.add(resourcepool.getParent().getName());
+		}
+		
+		return resourcePoolList;
+
+	}
+
+	
 	public ArrayList<String> listNetworks() throws InvalidProperty, RuntimeFault, RemoteException {
 
 		ManagedEntity[] datacenters = 
@@ -535,14 +571,27 @@ public class VsphereServer {
 
 	public VirtualMachine createVm(String vmName, long vmMemorySize, int vmCpuCount,
 			String vmGuestOsId, VmDisk[] vmDisks,
-			VmNic[] vmNics, String vmDataCenterName, String vmDataStoreName ) throws Exception {
+			VmNic[] vmNics, String vmDataCenterName, String vmDataStoreName, String vmClusterName ) throws Exception {
 		//	ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
 
 		Datacenter dc = (Datacenter) new InventoryNavigator(rootFolder).searchManagedEntity("Datacenter", vmDataCenterName);
-		//    ResourcePool rp = (ResourcePool) new InventoryNavigator(
-		//    dc).searchManagedEntities("ResourcePool")[0];
-		ResourcePool rp = (ResourcePool) new InventoryNavigator(
-				dc).searchManagedEntities("ResourcePool")[0];
+
+		//Now find the correct resourcepool to create the vm
+		ManagedEntity[] resourcepools = new InventoryNavigator(rootFolder).searchManagedEntities("ResourcePool");
+
+		ArrayList<String> resourcePoolList=new ArrayList<String>();
+		
+		ResourcePool rp = null;
+		
+		for(int i=0; i<resourcepools.length; i++)
+		{
+			ResourcePool resourcepool = (ResourcePool) resourcepools[i];
+			if (resourcepools[i].getName().equals(vmClusterName)) {
+				System.out.println("using cluster/resourcepool "+vmClusterName);
+				rp= (ResourcePool)resourcepools[i];
+			}
+			resourcePoolList.add(resourcepool.getParent().getName());
+		}
 
 		Folder vmFolder = dc.getVmFolder();
 
@@ -554,6 +603,10 @@ public class VsphereServer {
 		vmSpec.setMemoryMB(vmMemorySize);
 		vmSpec.setNumCPUs(vmCpuCount);
 		vmSpec.setGuestId(vmGuestOsId);
+		
+		System.out.println("Vmname:"+vmName);
+		System.out.println("Memorysize:"+vmMemorySize);
+		System.out.println("GuestOsId:"+vmGuestOsId);
 
 		//We create one scsi controller
 		VirtualDeviceConfigSpec machineSpecs[]= new VirtualDeviceConfigSpec[vmNics.length+1+vmDisks.length];
@@ -566,6 +619,11 @@ public class VsphereServer {
 				VirtualDeviceConfigSpec diskSpec = VsphereUtils.createDiskSpec(
 					vmDataStoreName, cKey, vmDisks[i].getSize(), vmDisks[i].getMode(),i);
 
+				System.out.println("Disk Datastore:"+vmDataStoreName);
+				System.out.println("Ckey:"+cKey);
+				System.out.println("DiskSize:"+vmDisks[i].getSize());
+				System.out.println("DiskMode:"+vmDisks[i].getMode());
+
 			machineSpecs[i+1]=diskSpec;
 			
 		}
@@ -576,6 +634,12 @@ public class VsphereServer {
 
 			machineSpecs[vmDisks.length+1+i]= VsphereUtils.createNicSpec(
 					vmNics[i].getName(), vmNics[i].getNetwork(),vmNics[i].isStartConnected(),vmNics[i].isConnected(),vmNics[i].getType());
+					System.out.println("NicName:"+vmNics[i].getName());
+					System.out.println("NicNetwork:"+vmNics[i].getNetwork());
+					System.out.println("NicStartConnected:"+vmNics[i].isStartConnected());
+					System.out.println("NicConnected:"+vmNics[i].isConnected());
+					System.out.println("NicType:"+vmNics[i].getType());
+
 		}   
 
 		vmSpec.setDeviceChange(machineSpecs);
@@ -584,6 +648,8 @@ public class VsphereServer {
 		// create vm file info for the vmx file
 		VirtualMachineFileInfo vmfi = new VirtualMachineFileInfo();
 		vmfi.setVmPathName("["+ vmDataStoreName +"]");
+		System.out.println("Vm DatastoreName"+vmDataStoreName);
+
 		vmSpec.setFiles(vmfi);
 
 		// call the createVM_Task method on the vm folder
@@ -605,7 +671,11 @@ public class VsphereServer {
 			newVm = (VirtualMachine) new InventoryNavigator(rootFolder).searchManagedEntity("VirtualMachine",vmName);
 		} else 
 		{
-			System.out.println("VM could not be created. ");
+			System.out.println("VM could not be created. Error:");
+			if (task.getTaskInfo() != null && task.getTaskInfo().getError() != null)
+			{           
+				System.out.println("Task change ip detailed error :" + task.getTaskInfo().getError().getLocalizedMessage()); 
+			}
 			System.exit(-1);
 		}		
 		
@@ -617,13 +687,15 @@ public class VsphereServer {
 	public void setCdromVm(VirtualMachine newVm, String vmCdromIsoPath,String vsphereDataStoreName) throws Exception {
 		//Now add the cdrom
 
-		System.err.println(vsphereDataStoreName);
+		try {
+		System.err.println(vsphereDataStoreName+"-"+vmCdromIsoPath);
 		if (vmCdromIsoPath!=null) {
 			VirtualDeviceConfigSpec cdSpec = VsphereUtils.createAddCdConfigSpec(newVm, vsphereDataStoreName, vmCdromIsoPath);
 			VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
 
 			vmConfigSpec.setDeviceChange(new VirtualDeviceConfigSpec[]{cdSpec});
 
+			System.err.println("Mounting cdrom"+vsphereDataStoreName+vmCdromIsoPath);
 			Task cdtask = newVm.reconfigVM_Task(vmConfigSpec);
 			String cdresult=cdtask.waitForTask();
 
@@ -636,6 +708,8 @@ public class VsphereServer {
 
 			}
 
+		} } catch (Exception ex) {
+			System.err.println(ex.toString());
 		}
 	}
 
@@ -664,6 +738,9 @@ public class VsphereServer {
 		}
 
 	}
+
+
+
 
 
 
