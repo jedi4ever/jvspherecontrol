@@ -61,6 +61,9 @@ public class CreateVmCommand extends VsphereCommand  {
 	public String omapiHost;
 	public String omapiKeyName;	
 	
+	public boolean registermac=false;
+	public String registermacCommand;
+	
 	public CreateVmCommand() {
 		super();
 	}
@@ -197,6 +200,12 @@ public class CreateVmCommand extends VsphereCommand  {
 				String macAddress=vsphereServer.getMacAddress(pxeInterface,newVm);
 				omapiServer.updateDHCP(vmName, macAddress,omapiOverWrite);
 				System.out.println(macAddress);
+			}
+			
+			if (registermac) {
+				String command = String.format(registermacCommand, vsphereServer.getMacAddress(pxeInterface,newVm));
+				Runtime runtime = Runtime.getRuntime();
+				runtime.exec(command);
 			}
 
 			vsphereServer.powerOnVm(newVm);		
@@ -450,6 +459,9 @@ public class CreateVmCommand extends VsphereCommand  {
 		//Bootorder
 		vmBootOrder=cmdLine.getOptionValue("bootorder");
 		
+		//Register MAC
+		registermacCommand=cmdLine.getOptionValue("registermac");
+		registermac = (registermacCommand != null && registermacCommand.length() > 0);
 	}
 	
 
@@ -508,7 +520,7 @@ public class CreateVmCommand extends VsphereCommand  {
 		options.addOption(OptionBuilder.withArgName("port").hasArg().withDescription("omapi portname").create("omapiport"));		
 		options.addOption(OptionBuilder.withArgName("keyname").hasArg().withDescription("omapi key to use").create("omapikeyname"));		
 		options.addOption(OptionBuilder.withArgName("base64 string").hasArg().withDescription("omapi value").create("omapikeyvalue"));		
-		
+		options.addOption(OptionBuilder.withArgName("command").hasArg().withDescription("command to execute, %s gets replaced with the MAC address").create("registermac"));
 	}
 	
 	public String getHelp() {
