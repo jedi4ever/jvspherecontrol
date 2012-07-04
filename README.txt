@@ -44,6 +44,7 @@ createvm     --bootorder <order to boot: allow:cd,hd,net or deny:net,cd>
 --overwrite <overwrite vm Flag>
 --password <password to connect to vSphere>
 --pxeinterface <name of the network interface to PXE from>
+--registermac <command to execute, %s gets replaced with the MAC address>
 --url <url to connect to>
 --user <username to connect to vSphere>
 
