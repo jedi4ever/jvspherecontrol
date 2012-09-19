@@ -205,7 +205,8 @@ public class CreateVmCommand extends VsphereCommand  {
 			if (registermac) {
 				String command = String.format(registermacCommand, vsphereServer.getMacAddress(pxeInterface,newVm));
 				Runtime runtime = Runtime.getRuntime();
-				runtime.exec(command);
+				Process process = runtime.exec(command);
+				process.waitFor();
 			}
 
 			vsphereServer.powerOnVm(newVm);		
