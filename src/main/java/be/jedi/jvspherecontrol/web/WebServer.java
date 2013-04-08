@@ -1,4 +1,4 @@
-package be.jedi.jvpsherecontrol.web;
+package be.jedi.jvspherecontrol.web;
 
 import org.eclipse.jetty.server.Server;
 
