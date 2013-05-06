@@ -506,7 +506,7 @@ public class CreateVmCommand extends VsphereCommand  {
 			
 			options.addOption(OptionBuilder.withArgName( "size" ).hasArgs().withDescription(  "size in kb of disk to create" ).create( "disksize"+i ));
 			options.addOption(OptionBuilder.withArgName( "persistent|independent_persistent|independent_nonpersistent" ).hasArgs().withDescription(  "disk mode" ).create( "diskmode"+i ));
-			options.addOption(OptionBuilder.withArgName( "name" ).hasArgs().withDescription(  "name of the datastore to create the disk" ).create( "diskdatatastore"+i ));
+			options.addOption(OptionBuilder.withArgName( "name" ).hasArgs().withDescription(  "name of the datastore to create the disk" ).create( "diskdatastore"+i ));
 		
 		}
 		
